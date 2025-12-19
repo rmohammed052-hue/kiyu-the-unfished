@@ -1,0 +1,195 @@
+.
+
+🧩 KiyuMart MVP – Updated Additions (with Price Display + Organized Phases)
+🏗️ Phase 1: UI & Product Display
+
+New / Updated Requirements:
+
+Clickable UI:
+All buttons, icons, and product cards are fully clickable and redirect to the appropriate pages.
+
+Product Card → Product Detail
+
+Category → Category Page
+
+Profile → User Dashboard
+
+Cart → Cart Page
+
+Auto-Search (Instant Search):
+Live product search as the user types (debounced at 300 ms).
+Results show dynamically for both product names and categories.
+
+Product Grid Updates:
+
+Remove “Add to Cart” button from product grid/landing page.
+
+Entire product card is clickable → navigates to Product Detail page.
+
+Display:
+
+Product images (up to 5)
+
+Product name
+
+Cost price (displayed with strike-through)
+
+Selling price (bold and highlighted in brand color)
+
+Optional discount percentage (e.g., “-20%”)
+
+Wishlist heart icon (toggle) persists per user.
+
+🛍️ Phase 2: Product Details & Wishlist
+
+Product detail page displays:
+
+Up to 5 product images (5 MB max each)
+
+Product variants (color, size, etc.) with inventory tracking
+
+One product video (10 MB max)
+
+Rich-text product description
+
+Price display formatting:
+
+Original cost price = strike-through gray text
+
+Selling price = bold, colored, larger font
+
+Reviews (star rating + comments)
+
+Related products carousel
+
+“Add to Cart” button (only here, not on grid)
+
+“Share on WhatsApp” button
+
+Wishlist Page:
+
+Shows all favorited items
+
+Heart icon toggle adds/removes items
+
+Synced to user account (via userId)
+
+🗺️ Phase 3: Location & Delivery
+
+Request user permission for live location during checkout.
+
+Use OpenStreetMap (Leaflet.js) + Navigator.geolocation for:
+
+Real-time location detection
+
+Auto-filled delivery address fields
+
+Distance-based delivery fee
+
+Admin defines zones and rates per region in dashboard.
+
+Riders see optimized routes based on location coordinates.
+
+💰 Phase 4: Cart & Checkout
+
+Cart system features:
+
+Add/remove/update quantity
+
+Subtotal auto-updates
+
+Processing fee (1.95%) visible under subtotal
+
+Delivery fee (based on zone) displayed
+
+Final total auto-calculated
+
+Multi-currency (GHS default; uses exchangerate.host for conversion)
+
+Checkout via Paystack (GHS, USD, NGN, etc.)
+
+Cart icon badge:
+
+Small, round, bright counter (red/orange)
+
+Updates in real-time when items are added
+
+🧭 Phase 5: Footer & Admin Control
+
+Footer content (logo, contact details, social media links, quick links)
+is editable from Admin Dashboard.
+
+Changes reflect instantly on all pages.
+
+🧠 Phase 6: Dashboards & Access
+
+Add dummy logins in README.md for Replit testing:
+
+Role	Email	Password	Redirect
+Super Admin	admin@kiyumart.com
+	admin123	/dashboard/admin
+Seller	seller@kiyumart.com
+	seller123	/dashboard/seller
+Rider	rider@kiyumart.com
+	rider123	/dashboard/rider
+Agent	agent@kiyumart.com
+	agent123	/dashboard/agent
+
+Each dashboard must be fully functional with real data views:
+
+Admin: product approval, region pricing, analytics
+
+Seller: product management, order tracking, sales summary
+
+Rider: assigned orders, map tracking, delivery confirmation
+
+Agent: customer help, chat, and reports
+
+🌍 Phase 7: Multi-Language & Currency
+
+Implement i18next for language switching across:
+
+Frontend
+
+Dashboards
+
+Buttons, modals, messages
+
+Supported languages:
+English 🇬🇧, French 🇫🇷, Twi 🇬🇭, Hausa 🇳🇬, Arabic 🇸🇦
+
+Detect browser language automatically, or allow manual switch.
+
+Translations apply dynamically (no reload).
+
+🔒 Phase 8: Security & Biometric Options
+
+Optional authentication layer:
+
+PIN unlock
+
+Fingerprint / Face ID (where supported)
+
+Powered by WebAuthn for browsers and native biometric APIs for mobile/PWA.
+
+💬 Phase 9: Chat & Communication
+
+WhatsApp-like chat for buyer/seller interaction:
+
+Real-time messages, emojis, file sharing, voice notes
+
+Typing and delivery indicators (✓, ✓✓)
+
+“Share via WhatsApp” button available on every product page.
+
+✅ Summary of Newly Added / Updated Items
+Category	Update
+Product Grid	Added cost price (strike-through) + selling price styling
+Product Detail	Price formatting and visibility improvements
+Cart	1.95 % processing fee visible under subtotal
+Footer	Editable from Admin dashboard
+Buttons	All buttons clickable and redirect properly
+Search	Auto-search while typing
+Location	Live GPS detection via OpenStreetMap
+Dashboards	Dummy logins for Admin/Seller/Rider/Agent
+Language	Full translation (frontend + dashboards)

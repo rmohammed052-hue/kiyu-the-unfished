@@ -1,0 +1,59 @@
+FOUND IT! Look at line 32 in queryClient.ts:
+
+const res = await fetch(queryKey.join("/") as string, {
+
+The default query function joins the queryKey array with "/" to form the URL!
+
+So when someone uses a query like:
+
+queryKey: ["/api/users", "media-library"]
+
+It becomes: /api/users/media-library which explains the 403 error!
+
+Now I need to find where in the code this pattern is being used. Let me search for queries with arrays that would form these incorrect URLs.
+
+FOUND IT! The bug is in the queryClient.ts default fetcher! Look at line 32:
+
+const res = await fetch(queryKey.join("/") as string, {
+
+This joins the queryKey array with / to create the URL. So if a query uses:
+
+queryKey: ["/api/users", "media-library"]
+
+It becomes: /api/users/media-library instead of just /api/users!
+
+Let me find all the problematic queries:
+
+
+Show 2 more
+
+Searched seller page queryKeys (5 seconds)
+Now let me find the specific seller pages that are causing the issue:
+
+
+Show less
+
+Executed grep -rn "queryKey" client/src/pages/SellerProducts.tsx client/src/pages/SellerOrders.tsx client/src/pages/SellerMessages.tsx client/src/pages/SellerSettings.tsx | head -40
+
+Opened client/src/pages/SellerDashboardConnected.tsx
+
+Investigated seller permissions for endpoints (5 seconds)
+
+Executed rg -A 3 -n 'GET.*\/api\/users\/|requireRole.*seller' server/routes.ts | head -n 50
+
+Executed curl -s http://localhost:5000/api/auth/me -H "Cookie: $(cat /tmp/test_cookie 2>/dev/null)" 2>&1 | head -20
+
+Diagnosed API endpoint existence issues (7 seconds)
+Wait, I need to check if there's something in the shared components making these API calls! Let me check DashboardLayout:
+
+
+Show less
+
+Executed rg -n 'useQuery|queryKey|fetch.*api' client/src/components/DashboardLayout.tsx
+
+Executed rg -n 'useQuery|queryKey' client/src/components/DashboardSidebar.tsx
+
+Opened client/src/components/DashboardLayout.tsx
+
+Decided on search strategy
+The feedback is right - I should use search_codebase to find where these problematic multi-part queryKeys are being used. Let me search specifically for queryKey patterns that would cause the issue.

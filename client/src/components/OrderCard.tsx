@@ -1,0 +1,99 @@
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Package, MapPin, Calendar } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+interface OrderCardProps {
+  orderId: string;
+  customerName: string;
+  items: number;
+  total: number;
+  currency?: string;
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  deliveryMethod: "pickup" | "bus" | "rider";
+  date: string;
+  onViewDetails?: (orderId: string) => void;
+}
+
+const statusConfig = {
+  pending: { label: "Pending", className: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400" },
+  processing: { label: "Processing", className: "bg-blue-500/10 text-blue-700 dark:text-blue-400" },
+  shipped: { label: "Shipped", className: "bg-purple-500/10 text-purple-700 dark:text-purple-400" },
+  delivered: { label: "Delivered", className: "bg-primary/10 text-primary" },
+  cancelled: { label: "Cancelled", className: "bg-destructive/10 text-destructive" },
+};
+
+const deliveryConfig = {
+  pickup: { label: "Pickup", icon: Package },
+  bus: { label: "Bus", icon: Package },
+  rider: { label: "Rider", icon: MapPin },
+};
+
+export default function OrderCard({
+  orderId,
+  customerName,
+  items,
+  total,
+  currency = "GHS",
+  status,
+  deliveryMethod,
+  date,
+  onViewDetails,
+}: OrderCardProps) {
+  const { formatPrice } = useLanguage();
+  const statusInfo = statusConfig[status];
+  const deliveryInfo = deliveryConfig[deliveryMethod];
+  const DeliveryIcon = deliveryInfo.icon;
+
+  return (
+    <Card className="hover-elevate transition-all">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <p className="text-sm font-medium" data-testid={`text-order-id-${orderId}`}>
+              Order #{orderId}
+            </p>
+            <p className="text-sm text-muted-foreground">{customerName}</p>
+          </div>
+          <Badge className={statusInfo.className} data-testid={`badge-status-${orderId}`}>
+            {statusInfo.label}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Package className="h-4 w-4" />
+            <span>{items} items</span>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <DeliveryIcon className="h-4 w-4" />
+            <span>{deliveryInfo.label}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Calendar className="h-4 w-4" />
+          <span>{date}</span>
+        </div>
+
+        <div className="flex items-center justify-between pt-2 border-t">
+          <div>
+            <p className="text-xs text-muted-foreground">Total</p>
+            <p className="text-lg font-bold" data-testid={`text-total-${orderId}`}>
+              {formatPrice(total)}
+            </p>
+          </div>
+          <Button 
+            variant="outline"
+            onClick={() => onViewDetails?.(orderId)}
+            data-testid={`button-view-${orderId}`}
+          >
+            View Details
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

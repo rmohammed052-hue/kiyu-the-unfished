@@ -1,0 +1,208 @@
+## CRITICAL ISSUES TO FIX - NOTHING SHOULD BE MISSED
+
+### 1. SELLER ONBOARDING & STORE MANAGEMENT (ADMIN DASHBOARD)
+
+**Add Seller Form - Critical Missing Features:**
+- The "Add Seller" form lacks Store Type/Category selection dropdown - this must be added as a REQUIRED field
+- No product categories are being initialized or assigned based on store type - implement dynamic category assignment tailored to selected store type
+- Store banner currently only accepts URL input - replace with proper image upload functionality with preview
+- These missing features are blocking sellers from adding products since there are no categories available to select from
+
+**Required Implementation:**
+- Add dynamic Store Type/Category dropdown in "Create New Seller" form
+- Automatically populate relevant product categories based on selected store type
+- Implement image upload component for store banner (not just URL input)
+- Ensure all products in that store are strictly tailored to the selected store category
+
+### 2. ADD PRODUCT FORM - STRUCTURE & DYNAMIC FIELDS
+
+**Current Problems:**
+- Add Product form lacks structured layout for product display
+- Missing product category selection dropdown
+- No dynamic fields based on product type (e.g., Size, Color for clothing)
+- Form doesn't match the expected structured layout as shown in reference image
+
+**Required Implementation:**
+- Restructure the Add Product form with clean, organized layout for better product display
+- Add Product Category dropdown that shows ONLY categories relevant to the specific store type
+- Implement dynamic, conditional fields based on product type:
+  - Clothing: Size, Color (both REQUIRED)
+  - Electronics: Specifications, Warranty
+  - Food: Expiry Date, Ingredients
+  - Any product-specific attributes that must be REQUIRED to complete a purchase
+- Display only relevant product categories - do not show categories unless a store of that type exists
+- In single store mode, display ONLY the selected store's product categories
+
+### 3. SELLER DASHBOARD - CRITICAL BUGS
+
+**Product Page:**
+- Product page in seller dashboard crashes - investigate and fix immediately
+- Perform full debugging and error handling
+
+**Orders Page:**
+- Orders in seller dashboard show as empty even after orders were placed for the specific store
+- Orders should only appear and be counted AFTER payment is completed
+- Unpaid/incomplete orders should only be visible to the customer who created them
+- After payment, orders should immediately appear in seller dashboard
+Ensure view recent order pages redirect to appropriatepage and not mix with personal orders page
+
+**Payment Setup:**
+- Payment setup for sellers displays "No store found" error - fix store association logic
+
+**Notifications:**
+- Notifications received by sellers after orders are made show as empty - fix notification data population
+Cart notification must only show the number of orders not number of cart items added
+
+### 4. DELIVERY & RIDER MANAGEMENT
+
+**Seller Delivery Management:**
+- Sellers must be able to manage deliveries and manually assign them to available riders for all orders made
+- Display all deliveries with the riders currently handling them
+- Allow sellers to select a specific rider to monitor their delivery in real-time…admin can enable and disable permission for this feature ensuring it visibility in the sellers page
+
+**Real-Time Delivery Tracking:**
+- Implement real-time geolocation tracking using rider's phone GPS
+- Display comprehensive rider information: Vehicle type, Model/Brand, Plate number, Color (based on vehicle type)
+- Ensure tracking updates in real-time on seller dashboard
+
+**Automatic Rider Assignment:**
+- System should wait approximately 1 hour if no rider is manually assigned by sellers or admin
+- After 1 hour, automatically assign an available rider to the order
+- Send notification to both sellers AND admin stating: "Rider was automatically assigned after 1hr without manual assignment"…
+- Notification must reference the specific order, not number of cart items
+
+**Delivery vs Shipping Terminology:**
+- The app currently handles DELIVERY, not shipping
+- Remove all "shipping" references and replace with "delivery" throughout the entire platform
+- Update delivery methods across all user types consistently
+
+### 5. ADMIN CHAT SYSTEM - DYNAMIC ADMIN ASSIGNMENT
+
+**Current Problem:**
+- Default admin account is hardcoded when seller opens chat
+- This must be dynamically imported from available admins, not hardcoded
+
+**Required Implementation:**
+- Default admin for any chat should be the Super Admin (real account, not hardcoded)
+- ANY available admin should receive the message and can reply
+- Sellers see different admin profiles depending on who is responding, but under the SAME unified admin chat (no multiple separate chats)
+- Super Admin can set any chat from any user type (seller, rider, admin, buyer) as PRIVATE - meaning only admins can see and reply to those messages
+- Implement proper admin routing and notification system for incoming chats
+
+### 6. ADMIN PERMISSIONS & RESTRICTIONS
+
+**Current Problem:**
+- Admin has restrictions on deleting, creating categories, and performing critical tasks
+
+**Required Implementation:**
+- Review ALL available admin permissions and ENTIRELY lift restrictions from the platform unless explicitly required for security
+- Ensure all user types have access to 100% of features based on their role type and assigned permissions
+- Admin should be able to:
+  - Delete categories, products, users as needed
+  - Edit products (but NOT change product prices set by sellers - keep this restriction)
+  - Perform all CRUD operations appropriate to admin role
+- Maintain role-based access control but remove unnecessary restrictions
+
+### 7. ORDERS & DASHBOARD ISSUES
+
+**Recent Orders Section:**
+- Recent orders in dashboard cannot be opened - buttons appear dead/non-functional
+- Fix all button click handlers and ensure proper navigation
+
+**Order Differentiation - CRITICAL:**
+- Currently mixing customer orders with personal orders (from admin, seller, agent, super admin, rider)
+- **STRICTLY DIFFERENTIATE** personal orders from client/customer orders
+- Create separate views/pages if necessary:
+  - Customer/Client Orders (public purchases)
+  - Internal Orders (admin, seller, agent, super admin, rider personal purchases)
+- "See All" button must redirect to the appropriate page based on order type and user type
+- Ensure proper page routing - no mixed redirects
+
+**Order Visibility & Information:**
+- Only admins can see customer/user information, payment method, etc.
+- Sellers can ONLY see order details (as already implemented)
+- Maintain this permission structure across all order views
+
+**Order Counting Logic:**
+- Orders should ONLY be counted if payment is completed
+- Unpaid/incomplete orders visible only to the customer who created them
+- After payment completion, order should be counted and visible to relevant parties (seller, admin)
+
+### 8. ADD NEW RIDER FORM - DYNAMIC FIELDS
+
+**Current Problem:**
+- Riders see relevant informations based on vehicle type selected
+Approved riders must appear in the assign riders page so admin or seller can assign them
+Seller must also have a page to assign riders manually, the riders shown on that page must be those that the admin permitted, add assign rider page in sellers dashboard must be permission based , which can be enable or disable for the sellers to have that features
+
+Rider edit buton in the admit page must import the rider information 
+
+**Required Implementation:**
+- In "Add New Rider" form (admin page) and rider application form:
+  - Show ONLY relevant fields based on vehicle type selected
+  - Example: If Bicycle is selected, do NOT show plate number field
+  - Show: Color (REQUIRED for all vehicle types), Vehicle Type, Model/Brand (if applicable)
+- Color must be a default REQUIRED field for all vehicle types
+- Implement conditional rendering based on vehicle type selection
+
+### 9. CURRENCY DISPLAY & CONVERSION
+
+**Current Problem:**
+- Currency convention removes zeros from figures (e.g.,1,23 instead of 1,023.00 for foreign currency)
+
+**Required Implementation:**
+- Fix currency formatting to always display two decimal places
+- Add toggle button in admin dashboard to control whether based on country selected  language translation should also go along side currency conversion, is enabled/disabled
+- Ensure consistent currency formatting across the entire platform
+
+### 10. EXTERNAL ORDERS & PAGE REDIRECTS
+
+**Current Problem:**
+- External orders appearing in system
+- Improper page redirects throughout application
+
+**Required Implementation:**
+- Ensure NO external orders appear in the system
+- Audit all page redirects and button actions
+- Verify every button redirects to the correct, appropriate page
+- No mixed page redirects between order types or user types
+
+Also Message ticking must be on the message just as whatsapp does it, not under or next line after the image 
+A video call must have that full screen display with min recipient screen which an be switch  like whatsapp not double parallel screen
+
+In Group call selection , a button to select all or deselect and select a particular user and unselect them
+
+Ensure notification received for all orders must be clearcly communicated, eg. If sellrer , rider, admin etc makes an order it should say “Your payment for order #ORD-1762842581900 was successful. Total: GHS…”  but order from customers must properly indicated it customer order
+
+### 11. COMPREHENSIVE TESTING REQUIREMENTS
+
+**Perform Deep Manual Testing:**
+- Test EVERY page in Admin Dashboard
+- Test EVERY page in Seller Dashboard  
+- Test EVERY page in Rider Dashboard
+- Test EVERY page in Agent Dashboard (if applicable)
+- Test EVERY page in Buyer/Customer Dashboard
+
+**Verification Checklist:**
+- ✅ No dead links to pages
+- ✅ All buttons function and redirect to appropriate pages
+- ✅ No mixed page redirects
+- ✅ Personal orders strictly differentiated from client orders
+- ✅ Create appropriate new pages if necessary for proper separation
+- ✅ All forms submit correctly
+- ✅ All data displays correctly in all dashboards
+- ✅ All notifications work properly
+- ✅ All real-time features function correctly
+- ✅ All role-based permissions enforced correctly
+
+### 12. PRODUCTION READINESS
+
+**Final Requirements:**
+- Ensure EVERYTHING works perfectly and is ready for production deployment
+- No console errors
+- Proper error handling throughout
+- Loading states for async operations
+- Responsive design across all devices
+- Security best practices implemented
+- Database queries optimized
+- API endpoints secured and efficient

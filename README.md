@@ -1,0 +1,898 @@
+# KiyuMart - Islamic Women's Fashion E-commerce Platform
+
+![KiyuMart](https://via.placeholder.com/1200x300/16a34a/ffffff?text=KiyuMart+-+Islamic+Fashion+Marketplace)
+
+> **⚠️ CRITICAL: AI DEVELOPMENT PROTECTION GUIDELINES**
+>
+> This is a **fully functional, production-ready e-commerce platform** with complex, working architecture.
+> 
+> **DO NOT:**
+> - Rebuild entire components or systems "to improve them"
+> - Refactor working code without explicit request
+> - Change database schema primary key types (breaks all data)
+> - Delete or rename core files without understanding dependencies
+> - Modify `vite.config.ts`, `drizzle.config.ts`, or `package.json` directly
+> 
+> **DO:**
+> - Make targeted, minimal changes to fix specific issues
+> - Read existing code before making changes
+> - Preserve existing patterns and conventions
+> - Test thoroughly before completing tasks
+> - Update `replit.md` when adding features
+> 
+> **Database Safety:**
+> - Use `npm run db:push` for all schema changes (NEVER write SQL migrations)
+> - Use `npm run db:push --force` if data loss warning appears (when safe to do so)
+> - NEVER change ID column types (serial ↔ varchar) - this destroys existing data
+> 
+> **If Unsure:**
+> - Ask questions before making major changes
+> - Check `replit.md` for project-specific documentation
+> - Review this README for architecture understanding
+> 
+> **Remember**: All features are working as designed. Fix what's broken, add what's requested, preserve what works.
+
+---
+
+## 📖 Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [Configuration](#configuration)
+- [User Roles & Permissions](#user-roles--permissions)
+- [API Documentation](#api-documentation)
+- [Database Schema](#database-schema)
+- [Deployment](#deployment)
+- [Environment Variables](#environment-variables)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## 🌟 Overview
+
+**KiyuMart** is a comprehensive e-commerce platform dedicated to modest Islamic women's fashion, featuring elegant abayas, hijabs, and modest dresses. The platform operates as both a **single-store marketplace** and a **multi-vendor marketplace**, with dynamic switching controlled by super admin settings.
+
+### 🎯 Business Vision
+
+To be a leading online destination for modest Islamic fashion, offering a diverse and inclusive range of high-quality products to a global market while empowering local and international sellers.
+
+---
+
+## ✨ Features
+
+### 🛍️ Customer Features
+
+- **Product Browsing**
+  - Browse products by categories (Abayas, Hijabs, Dresses, Accessories)
+  - Advanced filtering and search capabilities
+  - Product variant selection (size, color)
+  - High-quality product images (up to 5 images per product)
+  - Product videos for detailed viewing
+  - Customer reviews and ratings (1-5 stars)
+  - Related products suggestions
+
+- **Shopping Experience**
+  - Persistent shopping cart with real-time updates
+  - Wishlist functionality with heart icons
+  - Multi-currency support (GHS, NGN, XOF, USD, EUR, SAR)
+  - Multi-language support (English, French, Arabic)
+  - Automatic currency switching based on language selection
+  - Mobile-first responsive design
+  - Dark/light mode theme support
+
+- **Order Management**
+  - Secure Paystack payment integration
+  - Real-time order tracking with live map visualization (Leaflet.js + OpenStreetMap)
+  - QR code generation for order verification
+  - Order history and status tracking
+  - Email and push notifications
+
+- **User Account**
+  - Profile picture upload (Cloudinary integration)
+  - Personal information management
+  - Address management
+  - Order history
+  - Wishlist management
+  - Settings and preferences (notifications, theme, language)
+
+### 👨‍💼 Admin Features
+
+- **Dashboard Analytics**
+  - Total revenue tracking
+  - Order statistics
+  - Product performance metrics
+  - User growth analytics
+  - Real-time order monitoring
+
+- **Platform Settings** (`/admin/settings`)
+  - **General Settings**: Platform name, multi-vendor mode toggle
+  - **Payment Configuration**: Paystack API keys (public/secret), processing fee percentage
+  - **Cloudinary Storage**: Cloud name, API key, API secret
+  - **Contact Information**: Phone, email, address, social media links
+  - **Branding**: Primary color customization, logo upload
+  - **Currency**: Default currency selection
+  - **Footer Content**: Dynamic footer description and contact details
+
+- **Delivery Zone Management** (`/admin/delivery-zones`)
+  - Create, edit, and delete delivery zones
+  - Set delivery fees per zone
+  - Configure estimated delivery times
+  - Manage zone coverage areas
+  - Enable/disable zones
+
+- **Product Management**
+  - Add, edit, delete products
+  - Manage product variants (sizes, colors)
+  - Upload multiple images and videos
+  - Inventory management
+  - Category assignment
+  - Pricing control (cost price, selling price, discounts)
+
+- **Order Management**
+  - View all orders
+  - Update order status
+  - Assign riders to orders
+  - Process refunds
+  - Export order data
+
+- **User Management**
+  - View all users (customers, sellers, riders)
+  - Manage user roles and permissions
+  - Enable/disable accounts
+  - View user activity
+
+- **Hero Banner Management**
+  - Create promotional banners
+  - Auto-scrolling carousel
+  - Schedule banner visibility
+  - Image upload and positioning
+
+### 🏪 Seller Features (Multi-Vendor Mode)
+
+- **Seller Dashboard**
+  - Sales analytics
+  - Product performance tracking
+  - Revenue reports
+  - Order notifications
+
+- **Product Management**
+  - Add own products
+  - Manage inventory
+  - Set pricing
+  - Upload product media
+  - Track product views and sales
+
+- **Order Processing**
+  - View incoming orders
+  - Update order status
+  - Manage fulfillment
+  - Customer communication
+
+### 🚴 Rider Features
+
+- **Delivery Dashboard**
+  - Assigned deliveries list
+  - Route optimization
+  - Real-time location tracking
+  - Delivery status updates
+
+- **Order Management**
+  - View delivery details
+  - Update delivery status
+  - Customer contact information
+  - Navigation assistance
+
+---
+
+## 🛠️ Technology Stack
+
+### Frontend
+- **Framework**: React 18 with Vite
+- **Language**: TypeScript
+- **Routing**: Wouter (lightweight React router)
+- **State Management**: 
+  - TanStack Query v5 (server state)
+  - Zustand (client state)
+  - Context API (theme, language)
+- **UI Components**: Shadcn UI (Radix UI primitives)
+- **Styling**: Tailwind CSS with custom green theme
+- **Forms**: React Hook Form with Zod validation
+- **Maps**: Leaflet.js with OpenStreetMap
+- **Real-time**: Socket.IO Client
+- **Icons**: Lucide React, React Icons
+- **QR Codes**: React QR Code
+
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Language**: TypeScript (tsx runtime)
+- **Real-time**: Socket.IO
+- **Authentication**: JWT + Bcrypt
+- **Session Management**: express-session with connect-pg-simple
+- **File Upload**: Multer
+- **Validation**: Zod with zod-validation-error
+
+### Database
+- **Database**: PostgreSQL (Neon Serverless)
+- **ORM**: Drizzle ORM (type-safe SQL)
+- **Migrations**: Drizzle Kit
+- **Schema Validation**: Drizzle Zod
+
+### External Services
+- **Payment Gateway**: Paystack API
+- **Media Storage**: Cloudinary (images, videos)
+- **Currency Conversion**: exchangerate.host API
+- **Maps**: OpenStreetMap with Leaflet.js
+
+### Development Tools
+- **Build Tool**: Vite
+- **Package Manager**: npm
+- **Type Checking**: TypeScript
+- **Code Quality**: ESBuild
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js** 18+ installed
+- **PostgreSQL** database (or use Replit's built-in Neon database)
+- **Cloudinary** account for media storage
+- **Paystack** account for payment processing
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd kiyumart
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   
+   Create a `.env` file or configure in Replit Secrets:
+   ```env
+   # Database (auto-configured on Replit)
+   DATABASE_URL=postgresql://...
+   PGHOST=...
+   PGPORT=...
+   PGDATABASE=...
+   PGUSER=...
+   PGPASSWORD=...
+
+   # Cloudinary (configure via Admin Settings or env vars)
+   CLOUDINARY_CLOUD_NAME=your-cloud-name
+   CLOUDINARY_API_KEY=your-api-key
+   CLOUDINARY_API_SECRET=your-api-secret
+   ```
+
+4. **Initialize the database**
+   ```bash
+   npm run db:push
+   ```
+
+5. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+6. **Access the application**
+   - Frontend: `http://localhost:5000`
+   - Backend API: `http://localhost:5000/api`
+
+### First-Time Setup
+
+1. **Access Admin Settings**
+   - Navigate to `/admin/settings`
+   - Default admin credentials are set during database initialization
+
+2. **Configure Platform**
+   - **Paystack**: Enter your Paystack public and secret keys
+   - **Cloudinary**: Enter your Cloudinary credentials
+   - **Contact Info**: Add your business contact details
+   - **Delivery Zones**: Set up delivery areas and fees
+
+3. **Add Products**
+   - Go to Admin Dashboard
+   - Add product categories
+   - Upload products with images and variants
+   - Set pricing and inventory
+
+4. **Test Payment**
+   - Use Paystack test keys for development
+   - Test cards: `4084084084084081` (successful), `4084084084084095` (insufficient funds)
+
+---
+
+## 📁 Project Structure
+
+```
+kiyumart/
+├── client/                  # Frontend React application
+│   ├── src/
+│   │   ├── components/      # Reusable UI components
+│   │   │   ├── Header.tsx
+│   │   │   ├── Footer.tsx
+│   │   │   ├── ProductCard.tsx
+│   │   │   ├── QRCodeDisplay.tsx
+│   │   │   └── ui/          # Shadcn UI components
+│   │   ├── pages/           # Route pages
+│   │   │   ├── Home.tsx
+│   │   │   ├── ProductDetails.tsx
+│   │   │   ├── Cart.tsx
+│   │   │   ├── Checkout.tsx
+│   │   │   ├── AdminDashboard.tsx
+│   │   │   ├── AdminSettings.tsx
+│   │   │   ├── AdminDeliveryZones.tsx
+│   │   │   ├── SellerDashboard.tsx
+│   │   │   └── RiderDashboard.tsx
+│   │   ├── contexts/        # React contexts
+│   │   │   └── LanguageContext.tsx
+│   │   ├── lib/             # Utilities
+│   │   │   ├── auth.tsx
+│   │   │   └── queryClient.ts
+│   │   └── App.tsx          # Main app with routes
+│   └── index.html
+├── server/                  # Backend Express application
+│   ├── routes.ts            # API routes
+│   ├── storage.ts           # Database operations (IStorage)
+│   ├── index.ts             # Server entry point
+│   └── vite.ts              # Vite dev server integration
+├── shared/                  # Shared types and schemas
+│   └── schema.ts            # Drizzle ORM schema + Zod validation
+├── attached_assets/         # User-uploaded static assets
+├── package.json             # Dependencies and scripts
+├── vite.config.ts           # Vite configuration
+├── tailwind.config.ts       # Tailwind CSS configuration
+├── drizzle.config.ts        # Drizzle ORM configuration
+└── README.md                # This file
+```
+
+---
+
+## ⚙️ Configuration
+
+### Admin Settings Page (`/admin/settings`)
+
+The platform can be fully configured through the admin settings interface:
+
+#### 1. General Settings
+- **Platform Name**: Your marketplace brand name
+- **Multi-Vendor Mode**: Toggle between single-store and multi-vendor marketplace
+
+#### 2. Payment Settings
+- **Paystack Public Key**: For frontend payment initialization
+- **Paystack Secret Key**: For backend payment verification
+- **Processing Fee**: Percentage fee per transaction (e.g., 1.95%)
+
+#### 3. Cloudinary Settings
+- **Cloud Name**: Your Cloudinary account identifier
+- **API Key**: Cloudinary API key
+- **API Secret**: Cloudinary API secret (encrypted)
+
+#### 4. Contact Information
+- **Phone**: Business phone number
+- **Email**: Support email address
+- **Address**: Physical business address
+- **Social Media**: Facebook, Instagram, Twitter URLs
+- **Footer Description**: Brief platform description
+
+#### 5. Branding
+- **Primary Color**: Main theme color (HSL format)
+- **Logo Upload**: Platform logo (light and dark versions)
+
+#### 6. Currency
+- **Default Currency**: GHS, NGN, XOF, USD, EUR, or SAR
+
+### Delivery Zones (`/admin/delivery-zones`)
+
+Configure delivery areas and pricing:
+- **Zone Name**: e.g., "Accra Central", "Lagos Island"
+- **Coverage Area**: Description of the area covered
+- **Delivery Fee**: Cost in default currency
+- **Estimated Time**: e.g., "1-2 days", "Same day"
+- **Active Status**: Enable/disable the zone
+
+---
+
+## 👥 User Roles & Permissions
+
+### Super Admin
+- Full platform access
+- Manage all settings
+- User management
+- Financial reports
+- System configuration
+
+### Admin
+- Product management
+- Order management
+- User support
+- Analytics access
+- Cannot change platform settings
+
+### Seller (Multi-Vendor Mode)
+- Manage own products
+- View own orders
+- Sales analytics
+- Product inventory
+- Cannot access other sellers' data
+
+### Rider
+- View assigned deliveries
+- Update delivery status
+- Access customer contact info
+- Location tracking
+
+### Customer
+- Browse products
+- Place orders
+- Track deliveries
+- Manage profile
+- Leave reviews
+
+---
+
+## 📡 API Documentation
+
+### Authentication Endpoints
+
+```
+POST   /api/auth/register          # Register new user
+POST   /api/auth/login             # Login
+GET    /api/auth/me                # Get current user
+POST   /api/auth/logout            # Logout
+```
+
+### Product Endpoints
+
+```
+GET    /api/products               # Get all products (with filters)
+GET    /api/products/:id           # Get single product
+POST   /api/products               # Create product (admin/seller)
+PATCH  /api/products/:id           # Update product (admin/seller)
+DELETE /api/products/:id           # Delete product (admin/seller)
+GET    /api/products/:id/variants  # Get product variants
+GET    /api/products/:id/reviews   # Get product reviews
+```
+
+### Order Endpoints
+
+```
+POST   /api/orders                 # Create order
+GET    /api/orders                 # Get user's orders
+GET    /api/orders/:id             # Get order details
+PATCH  /api/orders/:id             # Update order status (admin)
+POST   /api/orders/:id/assign      # Assign rider (admin)
+```
+
+### Cart Endpoints
+
+```
+GET    /api/cart                   # Get cart items
+POST   /api/cart                   # Add to cart
+PATCH  /api/cart/:id               # Update cart item
+DELETE /api/cart/:id               # Remove from cart
+```
+
+### Wishlist Endpoints
+
+```
+GET    /api/wishlist               # Get wishlist
+POST   /api/wishlist               # Add to wishlist
+DELETE /api/wishlist/:productId    # Remove from wishlist
+```
+
+### Payment Endpoints
+
+```
+POST   /api/payments/initialize    # Initialize Paystack payment
+GET    /api/payments/verify/:ref   # Verify payment
+```
+
+### Settings Endpoints
+
+```
+GET    /api/settings               # Get platform settings (public)
+PATCH  /api/settings               # Update settings (admin only)
+```
+
+### Delivery Zones
+
+```
+GET    /api/delivery-zones         # Get all active zones
+POST   /api/delivery-zones         # Create zone (admin)
+PATCH  /api/delivery-zones/:id     # Update zone (admin)
+DELETE /api/delivery-zones/:id     # Delete zone (admin)
+```
+
+### Reviews
+
+```
+POST   /api/reviews                # Create review
+GET    /api/products/:id/reviews   # Get product reviews
+```
+
+---
+
+## 🗄️ Database Schema
+
+### Core Tables
+
+- **users**: User accounts (customers, admins, sellers, riders)
+- **products**: Product catalog with variants
+- **product_variants**: Size/color combinations with stock
+- **orders**: Customer orders with delivery tracking
+- **order_items**: Individual products in orders
+- **reviews**: Product reviews and ratings
+- **cart**: Shopping cart items
+- **wishlist**: User wishlist items
+- **delivery_zones**: Configurable delivery areas
+- **delivery_tracking**: Real-time GPS location tracking
+- **chat_messages**: Customer support chat
+- **transactions**: Paystack payment records
+- **hero_banners**: Homepage promotional banners
+- **platform_settings**: Dynamic configuration (singleton table)
+
+### Key Relationships
+
+```
+users (1) ─── (N) products (seller)
+users (1) ─── (N) orders
+users (1) ─── (N) reviews
+products (1) ─── (N) product_variants
+products (1) ─── (N) reviews
+orders (1) ─── (N) order_items
+orders (1) ─── (N) delivery_tracking
+```
+
+---
+
+## 🚀 Deployment
+
+### Replit Deployment (Recommended)
+
+1. **Configure Deployment**
+   - Click "Deploy" button in Replit
+   - Deployment is pre-configured for Autoscale
+
+2. **Set Production Secrets**
+   - Add production Paystack keys
+   - Add production Cloudinary credentials
+   - Database URL is auto-configured
+
+3. **Deploy**
+   - Replit handles SSL, CDN, and scaling automatically
+   - Custom domain support available
+
+### Manual Deployment
+
+#### Build for Production
+
+```bash
+npm run build
+```
+
+#### Run Production Server
+
+```bash
+NODE_ENV=production node server/index.js
+```
+
+#### Environment Requirements
+
+- Node.js 18+
+- PostgreSQL database
+- Redis (optional, for sessions)
+- Port 5000 or PORT environment variable
+
+#### Reverse Proxy (Nginx)
+
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+---
+
+## 🔐 Environment Variables
+
+### Required
+
+```env
+# Database (Replit provides these automatically)
+DATABASE_URL=postgresql://user:pass@host:port/db
+PGHOST=host
+PGPORT=5432
+PGDATABASE=dbname
+PGUSER=user
+PGPASSWORD=password
+```
+
+### Optional (Can be configured via Admin Settings)
+
+```env
+# Cloudinary (or configure in Admin Settings)
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+
+# Paystack (or configure in Admin Settings)
+PAYSTACK_PUBLIC_KEY=pk_test_xxxxx
+PAYSTACK_SECRET_KEY=sk_test_xxxxx
+```
+
+### Session Secret (Auto-generated)
+
+```env
+SESSION_SECRET=auto-generated-on-first-run
+```
+
+---
+
+## 🎨 Customization
+
+### Theme Colors
+
+Edit `client/src/index.css`:
+
+```css
+:root {
+  --primary: 142.1 76.2% 36.3%;        /* Green #16a34a */
+  --primary-foreground: 0 0% 100%;      /* White */
+  --destructive: 0 84.2% 60.2%;         /* Red for discounts */
+  --background: 0 0% 100%;              /* White */
+  --foreground: 240 10% 3.9%;           /* Dark text */
+}
+
+.dark {
+  --primary: 142.1 76.2% 36.3%;        /* Same green */
+  --background: 240 10% 3.9%;           /* Dark background */
+  --foreground: 0 0% 98%;               /* Light text */
+}
+```
+
+### Logo
+
+Upload custom logos via Admin Settings or replace:
+- Light mode: Upload via branding section
+- Dark mode: Upload dark variant
+- Footer logo: Automatically uses uploaded logos
+
+---
+
+## 🧪 Testing
+
+### Test Accounts
+
+**Admin Account:**
+- Email: `admin@kiyumart.com`
+- Password: `admin123`
+
+**Customer Account:**
+- Email: `customer@test.com`
+- Password: `password123`
+
+### Paystack Test Cards
+
+- **Successful**: `4084084084084081`
+- **Insufficient Funds**: `4084084084084095`
+- **CVV**: 408
+- **PIN**: 0000
+- **Expiry**: Any future date
+
+---
+
+## 📱 Multi-Language Support
+
+### Supported Languages
+
+1. **English** (USD currency)
+2. **French** (EUR currency)
+3. **Arabic** (SAR currency)
+
+### Adding New Languages
+
+1. Update `LanguageContext.tsx`:
+   ```typescript
+   const currencies = {
+     en: { symbol: "$", code: "USD" },
+     fr: { symbol: "€", code: "EUR" },
+     ar: { symbol: "﷼", code: "SAR" },
+     // Add new language
+   };
+   ```
+
+2. Add translations to components
+3. Update language selector in Header
+
+---
+
+## 🛡️ Security Features
+
+- **Authentication**: JWT-based with httpOnly cookies
+- **Password Hashing**: Bcrypt with salt rounds
+- **Role-Based Access Control**: Middleware authorization
+- **Input Validation**: Zod schema validation
+- **SQL Injection Protection**: Drizzle ORM parameterized queries
+- **XSS Protection**: React automatic escaping
+- **CSRF Protection**: Same-origin policy
+- **Secure File Upload**: MIME type validation, size limits
+- **Payment Security**: Paystack server-side verification
+
+---
+
+## 📊 Analytics & Monitoring
+
+### Admin Dashboard Metrics
+
+- **Revenue Analytics**: Daily, weekly, monthly revenue
+- **Order Tracking**: Pending, processing, delivered
+- **Product Performance**: Top-selling products
+- **User Growth**: New registrations, active users
+- **Inventory Alerts**: Low stock notifications
+
+### Real-Time Features
+
+- **Live Order Updates**: Socket.IO notifications
+- **Delivery Tracking**: GPS location updates
+- **Chat Notifications**: Unread message counts
+- **Stock Updates**: Real-time inventory changes
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**1. Database Connection Error**
+```
+Solution: Check DATABASE_URL and ensure PostgreSQL is running
+```
+
+**2. Paystack Payment Fails**
+```
+Solution: Verify Paystack keys in Admin Settings
+Ensure using test keys in development
+```
+
+**3. Images Not Uploading**
+```
+Solution: Check Cloudinary credentials in Admin Settings
+Verify CLOUDINARY_CLOUD_NAME, API_KEY, API_SECRET
+```
+
+**4. Socket.IO Connection Failed**
+```
+Solution: Ensure server is running on correct port
+Check firewall settings for WebSocket connections
+```
+
+**5. Cart Shows NaN Price**
+```
+Solution: Already fixed - ensure products have valid prices
+Run database migration: npm run db:push
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these guidelines:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Code Style
+
+- Use TypeScript for all new code
+- Follow existing naming conventions
+- Add comments for complex logic
+- Include data-testid attributes for UI elements
+- Validate forms with Zod schemas
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+## 👨‍💻 Author
+
+**KiyuMart Development Team**
+
+---
+
+## 🙏 Acknowledgments
+
+- **Shadcn UI** - Beautiful accessible components
+- **Drizzle ORM** - Type-safe database operations
+- **Paystack** - Reliable African payment gateway
+- **Cloudinary** - Powerful media management
+- **Replit** - Seamless deployment platform
+- **OpenStreetMap** - Free mapping solution
+
+---
+
+## 📞 Support
+
+For support and questions:
+- **Email**: Configure in Admin Settings → Contact Info
+- **Phone**: Configure in Admin Settings → Contact Info
+- **Documentation**: This README
+- **Issues**: GitHub Issues (if applicable)
+
+---
+
+## 🗺️ Roadmap
+
+### Planned Features
+
+- [ ] SMS notifications (Twilio integration)
+- [ ] Email marketing campaigns
+- [ ] Advanced analytics dashboard
+- [ ] Inventory forecasting
+- [ ] Seller onboarding wizard
+- [ ] Mobile app (React Native)
+- [ ] Multi-warehouse support
+- [ ] Subscription-based products
+- [ ] Gift cards and vouchers
+- [ ] Affiliate marketing program
+- [ ] AI-powered product recommendations
+- [ ] Advanced SEO optimization
+- [ ] PWA (Progressive Web App) support
+
+---
+
+## 🔄 Recent Updates
+
+### November 6, 2025
+- **Fixed Admin Messaging**: AdminMessages now properly filters conversations by userId when clicking "Message" from AdminUsers page
+- **Renamed Delivery Partner**: Changed all "Become a Rider" references to "Become a Delivery Partner" throughout the platform
+- **Verified Agent Dashboard**: Confirmed AgentDashboard exists and is properly routed at `/agent`
+- **Added Comprehensive Documentation**: Added AI protection guidelines and detailed architecture documentation to README
+
+### November 5, 2025
+- **Fixed AdminUsers**: Now displays ALL user roles (admin, seller, buyer, rider, agent) instead of just buyers
+- **Fixed Seller Creation**: POST /api/users now automatically creates associated store when admin adds new seller
+- **Admin Chat Access**: Admins now have same permissions as agents for support conversations
+- **Ghana Card Verification**: Enhanced application system with profile photo and Ghana Card image verification
+- **Image Optimizations**: Reduced product card and detail page image sizes for better layout
+- **Primary Store Architecture**: Added centralized marketplace with primary store selection for single-store mode
+- **Registration Controls**: Added admin toggles for seller and delivery partner registrations
+
+### November 3, 2025
+- Initial production deployment with full feature set
+
+---
+
+**Built with ❤️ for the Islamic Fashion Community**
+
+*Last Updated: November 6, 2025*
+"# kiyu-the-unfished" 

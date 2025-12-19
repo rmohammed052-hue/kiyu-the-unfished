@@ -1,0 +1,172 @@
+import express, { type Request, Response, NextFunction } from "express";
+import cookieParser from "cookie-parser";
+import path from "path";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import jwt from "jsonwebtoken";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
+
+const app = express();
+
+// Trust proxy - Required for rate limiting behind Replit's proxy
+// Trust only first proxy (Replit's reverse proxy) for security
+// See: https://expressjs.com/en/guide/behind-proxies.html
+app.set('trust proxy', 1);
+
+// Security Headers - Helmet.js
+app.use(helmet({
+  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+  crossOriginEmbedderPolicy: false,
+}));
+
+// Role-aware rate limiting - Different limits based on user role
+// Uses IP-based keying (IPv6-safe by default) with role-based quotas
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: (req) => {
+    // Extract user role from JWT token for role-based limits
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
+        
+        // Role-based limits (per IP address)
+        switch (decoded.role) {
+          case 'super_admin':
+          case 'admin':
+            return 1000; // Admins: 1000 requests per 15 min per IP
+          case 'seller':
+          case 'rider':
+            return 500; // Sellers/riders: 500 requests per 15 min per IP
+          case 'agent':
+            return 300; // Agents: 300 requests per 15 min per IP
+          default:
+            return 100; // Buyers: 100 requests per 15 min per IP
+        }
+      } catch {
+        // Invalid token - treat as anonymous
+        return 100;
+      }
+    }
+    return 100; // Anonymous: 100 requests per 15 min per IP
+  },
+  // No custom keyGenerator - use library's default IPv6-safe IP-based keying
+  message: 'Too many requests, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for static assets
+    return req.path.startsWith('/attached_assets') || !req.path.startsWith('/api');
+  }
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 login/register attempts per windowMs
+  message: 'Too many authentication attempts, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Stricter rate limiting for auth routes (applied first)
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+
+// Role-aware rate limiting for all API routes
+app.use('/api', apiLimiter);
+
+declare module 'http' {
+  interface IncomingMessage {
+    rawBody: unknown
+  }
+}
+app.use(express.json({
+  verify: (req, _res, buf) => {
+    req.rawBody = buf;
+  }
+}));
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
+      log(logLine);
+    }
+  });
+
+  next();
+});
+
+(async () => {
+  const server = await registerRoutes(app);
+
+  // Global Error Handler - Must be after all routes
+  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    
+    // Log error details for debugging (in production, use proper logging service)
+    console.error('[ERROR]', {
+      timestamp: new Date().toISOString(),
+      method: req.method,
+      path: req.path,
+      status,
+      message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+      user: (req as any).user?.id || 'anonymous'
+    });
+
+    // Send appropriate error response
+    res.status(status).json({ 
+      error: message,
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
+  });
+
+  // Serve static files from attached_assets directory
+  app.use("/attached_assets", express.static(path.resolve(import.meta.dirname, "..", "attached_assets")));
+
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
+
+  // ALWAYS serve the app on the port specified in the environment variable PORT
+  // Other ports are firewalled. Default to 5000 if not specified.
+  // this serves both the API and the client.
+  // It is the only port that is not firewalled.
+  const port = parseInt(process.env.PORT || '5000', 10);
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
+  });
+})();

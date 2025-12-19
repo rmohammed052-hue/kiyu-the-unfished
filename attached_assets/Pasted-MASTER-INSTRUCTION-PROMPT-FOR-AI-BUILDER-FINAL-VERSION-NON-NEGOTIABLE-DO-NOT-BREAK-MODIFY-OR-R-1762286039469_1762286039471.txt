@@ -1,0 +1,465 @@
+MASTER INSTRUCTION PROMPT FOR AI BUILDER (FINAL VERSION)
+**NON-NEGOTIABLE: DO NOT BREAK, MODIFY OR REFACTOR ANY EXISTING WORKING CODE.
+
+→ ONLY ADD, EXTEND, FIX DEAD LINKS, AND MAKE FEATURES FUNCTIONAL.
+→ ALL CHANGES MUST BE INCREMENTAL AND FULLY BACKWARD-COMPATIBLE.**
+
+This project is an E-commerce platform supporting both Single-Store mode and Multi-Vendor mode, with seller dashboards, agent dashboards, rider dashboards, buyer features, product modules, admin templates, and hybrid dynamic category systems.
+
+Your job is to update, repair, link, complete, and enhance the system WITHOUT touching or breaking the existing working Single-Store experience.
+
+✅ GLOBAL NON-NEGOTIABLE RULES FOR ALL CHANGES
+
+Do NOT break existing Single-Store code or UI. EVER.
+
+Do NOT refactor or restructure working code.
+
+All updates must be done via:
+
+feature flags
+
+conditional rendering
+
+incremental DB fields
+
+additive new components or pages
+
+All existing public pages must remain unchanged unless multivendor_mode == true.
+
+Backup database before any migration.
+
+Provide rollback scripts for every DB change.
+
+Use existing components first — only create new ones if absolutely necessary.
+
+✅ 1. APP MODES (CORE LOGIC)
+✅ Single-Store Mode (Default)
+
+App functions as a normal Fashion / Islamic wear store.
+
+One unified store.
+
+No vendor marketplace visible.
+
+Sellers are hidden.
+
+The current Single-Store UI must remain exactly the same.
+
+✅ Multi-Vendor Mode
+
+When admin toggles multivendor_mode = true:
+
+The platform becomes a marketplace.
+
+Each seller has their store block represented as a small, clean category-style card.
+
+All stores are treated as categories but must:
+
+Automatically resize
+
+Fill gaps evenly
+
+Never overlap
+
+Maintain perfect responsive spacing
+
+Home page becomes central marketplace landing homepage:
+
+Global rotating banner (fashion, electronics, beauty, home, appliances, etc.)
+
+Featured products from all categories
+
+Dynamic sections based on category type
+
+Admin controls ALL homepage content
+
+✅ 2. LINK CURRENT SINGLE-STORE TO A SELLER ACCOUNT
+
+Goal: Let the existing Single-Store map to a seller so the seller can create/edit/delete all products without breaking Single-Store UX.
+
+✅ Add field (safe migration)
+ALTER TABLE stores
+ADD COLUMN IF NOT EXISTS primary_seller_id UUID;
+
+✅ Link store to seller
+UPDATE stores
+SET primary_seller_id = '<SELLER_USER_ID>'
+WHERE id = '<SINGLE_STORE_ID>';
+
+✅ Authorization Rules
+function canEditProduct(user, product) {
+  if (user.role === 'admin') return true;
+  if (user.role === 'seller' && product.store.primary_seller_id === user.id) return true;
+  return false;
+}
+
+✅ 3. HYBRID CATEGORY SYSTEM (YOUR CHOICE #3)
+✅ System includes BOTH:
+
+Fixed Core Categories
+
+Fashion
+
+Electronics
+
+Beauty
+
+Home & Living
+
+Appliances
+
+Accessories
+
+Islamic Wear (single-store default)
+
+Admin-Created Dynamic Categories
+
+Admin can create NEW categories from dashboard
+
+Admin can define custom dynamic fields per category:
+
+Text fields
+
+Dropdowns
+
+Numeric fields
+
+Tables (e.g., electronic specs)
+
+Multi-select attributes
+
+Product form automatically adapts to these fields
+
+✅ 4. PRODUCT MODULE (FINAL COMPREHENSIVE VERSION)
+✅ REQUIRED PRODUCT FIELDS
+
+ALL PRODUCTS must support:
+
+✅ General Fields
+
+Title
+
+Description (rich text)
+
+Price
+
+Compare price
+
+Currency
+
+SKU
+
+Stock quantity
+
+Inventory tracking
+
+Visibility / Publish toggle
+
+Tags
+
+Category selection (supports hybrid categories)
+
+Weight
+
+Dimensions
+
+Shipping profile
+
+SEO title / description
+
+Metadata JSON
+
+✅ Images
+
+4–5 images required
+
+Multiple uploads allowed
+
+Drag-and-drop
+
+Order sorting
+
+✅ Product Video (Strict Rule)
+
+✅ Only one video per product
+✅ Maximum duration 30 seconds
+✅ No minimum duration
+✅ Allowed: MP4 or WEBM
+✅ Auto-transcode if needed
+
+✅ Video Upload Validation
+
+Reject video with:
+
+Length > 30 seconds
+
+Unsupported format
+
+More than 1 video
+
+Corrupted metadata
+
+✅ Rejection message MUST mention:
+
+Why it failed
+
+Expected video rules
+
+Allowed formats
+
+Allowed duration
+
+✅ 5. DYNAMIC PRODUCT FIELDS BY CATEGORY
+Examples:
+✅ Electronics
+
+Specs table (key/value pairs)
+
+Warranty
+
+Brand
+
+Power rating
+
+Model number
+
+Connectivity types
+
+✅ Fashion
+
+Sizes
+
+Colors
+
+Fit & materials
+
+Gender
+
+Style type
+
+✅ Beauty
+
+Ingredients
+
+Skin type
+
+Usage instructions
+
+✅ Admin-defined categories add their own fields dynamically.
+✅ 6. AI IMAGE ENHANCEMENT (FREE OPEN-SOURCE)
+
+Use ONLY free open source models:
+
+✅ Real-ESRGAN (4K upscale)
+✅ SwinIR enhancement
+✅ GFPGAN for face products (optional)
+
+✅ Enhancement Pipeline
+
+Save original
+
+Queue AI enhancement job
+
+Replace image only if enhancement succeeds
+
+If failed → keep original
+
+Admin can toggle AI enhancement ON/OFF globally
+
+✅ 7. REAL PRODUCT REVIEWS
+
+✅ Only verified buyers
+✅ Ratings + text
+✅ Optional images
+✅ Seller replies
+✅ Admin moderation (approve/hide/delete)
+✅ No hardcoded reviews
+
+✅ 8. DASHBOARD SYSTEM (Admin, Seller, Agent, Rider)
+✅ Admin Dashboard — REQUIRED FEATURES
+
+Admin must be able to fully control every part of the platform:
+
+✅ Home Page Builder
+
+Full control over homepage banner images, text, offer tags
+
+Add/remove slides
+
+Multi-category featured sections
+
+Per-category layout control
+
+Choose display style (grid, cards, dropdown, carousel)
+
+✅ Global Banner Templates (VERY IMPORTANT)
+
+Admin must access pre-built templates:
+
+Christmas
+
+New Year
+
+Ramadan
+
+Black Friday
+
+Back to School
+
+Summer Sale
+
+Electronics Mega Week
+
+✅ Automatic Calendar Template Switching
+
+Admin can:
+
+Set schedules
+
+Auto-switch banner packs at specific dates
+
+Override manually at any time
+
+✅ Store & Seller Management
+
+Approve sellers
+
+Approve stores
+
+Link/unlink single-store seller
+
+Manage commissions & payouts
+
+Hide or force show any product
+
+Create dynamic categories
+
+Create custom fields for categories
+
+✅ Footer Management
+
+Editable:
+
+Contact info
+
+About text
+
+Social links
+
+Policies
+
+Payment icons
+
+✅ Seller Dashboard
+
+Must be fully functional:
+
+✅ Manage store details
+✅ CRUD products
+✅ Upload 4–5 images
+✅ Upload 1 video (max 30s)
+✅ Manage variants
+✅ Dynamic fields depending on category
+✅ Track orders
+✅ Update profile
+✅ Manage stock
+✅ View analytics
+✅ Withdraw funds or request payout
+
+✅ Agent Dashboard
+
+✅ Register new vendors
+✅ Track assigned vendors
+✅ Earn commissions
+✅ Approvals handled by admin
+
+✅ Rider Dashboard
+
+✅ View assigned deliveries
+✅ Live order tracking
+✅ Delivery status updates
+✅ Earnings summary
+
+✅ 9. MULTI-VENDOR VISUAL RULES
+
+When multi-vendor mode = true:
+
+✅ All stores appear as small category-like cards
+✅ Automatically resize to fill gaps evenly
+✅ Never overlap
+✅ Perfect grid spacing
+✅ Each card shows:
+
+Store logo
+
+Store name
+
+Category (e.g., Fashion Store, Electronics Store)
+
+✅ 10. FIX ALL DEAD LINKS & NON-WORKING BUTTONS
+
+Every button in:
+✅ Admin dashboard
+✅ Seller dashboard
+✅ User profiles
+✅ Agent dashboard
+✅ Rider dashboard
+
+Must:
+
+✅ Navigate to correct page
+✅ Load correct data
+✅ Support full CRUD
+✅ Handle loading states, errors, empty states
+
+✅ 11. ORDER SYSTEM
+
+✅ Buyers can:
+
+Add to cart
+
+Choose variants
+
+Checkout
+
+Track orders
+
+✅ Sellers can:
+
+View orders
+
+Update processing/shipping statuses
+
+✅ Riders can:
+
+Accept order
+
+Mark picked up
+
+Mark delivered
+
+✅ Admin can override everything
+
+✅ 12. FINAL ACCEPTANCE CRITERIA
+
+✅ Single-store looks EXACTLY same.
+✅ All dashboards 100% functional.
+✅ Seller linked to single-store can fully manage products.
+✅ Product form supports:
+
+Hybrid category fields
+
+4–5 images
+
+1 video (max 30s)
+
+Dynamic custom fields
+✅ All dead buttons fixed.
+✅ All pages created if missing.
+✅ AI image enhancement works safely.
+✅ Template auto-switch calendar works.
+✅ Multivendor mode shows all stores as equal small blocks.
+✅ No bugs.
+✅ No regressions.
+✅ No broken layouts.
+✅ No overwritten existing logic.

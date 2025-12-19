@@ -1,0 +1,308 @@
+TASK:
+Fix and complete the Multi-Vendor mode and all dashboards. Make the multi-vendor homepage a professional unified marketplace with a scrolling global banner that cycles products from all categories (fashion, electronics, home, groceries, etc.), full admin control for banners, templates, footer, and layout. Make sure every route, button, page, and dashboard for Admin, Seller, Agent, Rider, and Buyer works end-to-end (profile updates, purchases, order lifecycle, tracking, payouts). Do NOT break or rewrite any working single-store code. Only override UI/behavior when multivendor_mode == true (feature flag). Backup DB before changes.
+
+Scope & Constraints (Critical)
+
+Non-negotiable: Do not change or remove any working code or behavior used by Single-Store Mode. All changes must be gated by multivendor_mode and feature flags.
+
+All changes must be incremental, covered by migrations, feature flags, and tests.
+
+Create redirect pages for any dead links; do not leave users on 404s.
+
+Provide migration SQL/scripts and sample seed data, plus API contracts and frontend examples.
+
+Provide explicit acceptance tests (manual + automated) and a rollback plan.
+
+High-level requirements
+
+Multi-Vendor Homepage
+
+Central marketplace homepage showing:
+
+Scrolling global carousel/banner (autoplay, manual controls) that cycles slides of products, categories, and stores across all categories.
+
+Global featured products (from all stores).
+
+New arrivals, trending, and global category grid based on stores (each store → one small category tile).
+
+Category grid auto-resizes (shrinks) to evenly fill spacing as new stores are added (no overlap). See responsive rules below.
+
+Category Behavior
+
+The original single-store fashion sections become a single small category tile labeled "Fashion" (or admin-defined label) when multivendor_mode = true.
+
+Every approved vendor = one category tile (logo/banner thumbnail + name + product count).
+
+Card size rules:
+
+≤3 tiles → large cards (single row)
+
+4–6 tiles → medium cards (two rows)
+
+6 tiles → small uniform cards grid using grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) or equivalent in FlutterFlow.
+
+Global Scrolling Banner
+
+Carousel supports slides pointing to product, store, category, or search.
+
+Admin controls: image, title, subtitle, CTA, order, start_at, end_at, is_active, autoplay, duration, transition style, preview (mobile + desktop).
+
+Slides may show product price/discount if linked to a product.
+
+Slides are selected by schedule and by admin-chosen collection (templates).
+
+Admin Controls & Template Library
+
+Banner manager (create/update/delete/reorder/schedule).
+
+Prebuilt templates: Ramadan, Eid, Black Friday, Christmas, New Year, General Marketplace, etc. (seeded).
+
+Calendar automation: mapping templates to date ranges and auto-apply (cron daily check).
+
+Footer editor: full control of links, contacts, social links, payments icons, legal text.
+
+Theme & layout toggles: choose category display style (grid, horizontal, dropdown), number of visible categories, product block size.
+
+Store Landing Page
+
+Each store has a landing page; sellers manage products and metadata (logo, name, description) only.
+
+All page layout elements (banner, typography, category layout, style) are controlled by Super Admin in multivendor mode.
+
+Dashboards
+
+Ensure all dashboards (Admin, Seller, Agent, Rider, Buyer) are functional: login, role-based routes, product CRUD (seller), store approval (admin), order lifecycle, rider tracking, payouts.
+
+Provide missing pages for any dead links; wire buttons to routes and API endpoints.
+
+Buyers can update profile, place orders, checkout, view tracking, request returns/refunds.
+
+Riders can accept assignments, update GPS, and change delivery status.
+
+Data model (suggested additions / migrations)
+
+Add / extend tables: settings, banner_collections, banners, banner_schedules, admin_templates_library, template_mappings.
+Minimal migration SQL examples (adjust to existing schema):
+
+-- 1. Settings (key-value)
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value JSONB NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- 2. Banner collections (templates)
+CREATE TABLE IF NOT EXISTS banner_collections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  description TEXT,
+  type TEXT,
+  is_active BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- 3. Banners (slides)
+CREATE TABLE IF NOT EXISTS banners (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  collection_id UUID REFERENCES banner_collections(id),
+  title TEXT,
+  subtitle TEXT,
+  image_url TEXT NOT NULL,
+  product_ref UUID,
+  store_ref UUID,
+  cta_text TEXT,
+  cta_url TEXT,
+  "order" INT DEFAULT 0,
+  start_at TIMESTAMP WITH TIME ZONE,
+  end_at TIMESTAMP WITH TIME ZONE,
+  is_active BOOLEAN DEFAULT true,
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+
+Seed sample templates for Ramadan, Black Friday, Christmas, General Marketplace.
+
+Backend API contract examples
+
+Create banner — POST /api/admin/banners
+
+{
+  "collection_id": "uuid",
+  "title": "Black Friday Blowout",
+  "subtitle": "Deals across categories",
+  "image_url": "https://cdn/.../bf.jpg",
+  "product_ref": null,
+  "store_ref": null,
+  "cta_text": "Shop Deals",
+  "cta_url": "/search?tag=black-friday",
+  "order": 1,
+  "start_at": "2025-11-20T00:00:00Z",
+  "end_at": "2025-11-30T23:59:59Z",
+  "is_active": true,
+  "metadata": {}
+}
+
+
+Get homepage banners — GET /api/homepage/banners?mode=multivendor returns active slides filtered by date/time and is_active.
+
+Footer management — GET/PUT /api/admin/footer with JSON payload for links, contacts, socials, payment icons.
+
+Feature flag — ensure GET /api/settings?keys=multivendor_mode,active_banner_collection exists.
+
+Frontend implementation notes (React / Next.js or FlutterFlow)
+
+Feature gate: Wrap the new homepage logic via if(settings.multivendor_mode) { use marketplace layout } else { use legacy single-store layout }.
+
+Banner component: Use a performant carousel library or custom slider with:
+
+Preload next slide image
+
+Keyboard navigation & ARIA
+
+Mobile swipe support
+
+Admin preview toggle (desktop/mobile)
+
+Category grid CSS example (copy-paste):
+
+.category-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  align-items: start;
+}
+.category-card {
+  aspect-ratio: 16/10;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+.category-card .overlay {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  color: white;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+
+
+Store tile generation: For single-store -> create one tile named "Fashion" with thumbnail = original hero image or admin-specified thumbnail.
+
+Store landing pages: Ensure seller cannot edit layout fields when multivendor_mode == true. Seller can only manage product adds/edits, inventory, and price.
+
+Routing: Replace raw <a> that cause full reload with SPA <Link> and ensure 404 fallback page with helpful redirects. Implement RedirectPage component for legacy paths.
+
+Admin UI features (deliverables)
+
+Banner Manager: upload, drag reorder, schedule slides, preview (desktop/mobile), bulk apply template.
+
+Template Library: clickable templates (Ramadan, Christmas, Black Friday, New Year, General Marketplace) with preview and apply buttons.
+
+Calendar Automation: map template to date range and toggle auto_apply.
+
+Footer Editor: WYSIWYG for legal text, multi-column link editor, payment icons upload.
+
+Store Approvals: approve/reject/suspend stores, set featured stores.
+
+Feature flags panel: toggle multivendor_mode and other features (banner scheduler, calendar automation).
+
+Redirect Manager: map old dead routes to new routes (301) and a catch-all redirect page.
+
+Admin-provided banner texts (copy-paste ready)
+
+General Marketplace
+
+Title: "Shop the Marketplace"
+
+Subtitle: "Everything from Fashion to Electronics — curated picks from trusted sellers."
+
+CTA: "Browse All"
+
+Ramadan Collection
+
+Title: "Ramadan Specials"
+
+Subtitle: "Modest wear & seasonal deals — up to 40% off"
+
+CTA: "Explore Ramadan Deals"
+
+Black Friday
+
+Title: "Black Friday Blowout"
+
+Subtitle: "Best deals across categories — limited time"
+
+CTA: "Shop Black Friday"
+
+Christmas
+
+Title: "Holiday Gift Hub"
+
+Subtitle: "Perfect gifts and holiday deals"
+
+CTA: "Shop Gifts"
+
+Calendar automation (behavior)
+
+Daily cron job checks template_mappings and sets settings.active_banner_collection based on date ranges and priority.
+
+Admin can disable auto-apply or manually override.
+
+Save audit logs when auto change occurs.
+
+Acceptance criteria (automated & manual tests)
+
+Feature flag: When multivendor_mode = false, site behaves exactly as before. No UI changes.
+
+Banner: With multivendor_mode = true, homepage shows carousel slides from /api/homepage/banners?mode=multivendor, cycles automatically, and CTA navigates correctly.
+
+Categories: Each store appears as a small category tile; tiles shrink/expand responsively; no overlap on screen sizes (mobile/tablet/desktop).
+
+Admin control: Admin can create/update/delete banners, reorder slides, schedule start/end, apply templates, edit footer fields.
+
+Store landing: Sellers cannot change layout in multivendor mode; they can still manage products/prices/stock.
+
+Dashboards: Admin, Seller, Agent, Rider, Buyer flows complete: login, profile update, product CRUD, order creation, assignment, rider GPS updates, delivery completion, payouts.
+
+Dead links: All identified dead links either produce working pages or redirect via RedirectPage.
+
+Rollback: Feature can be toggled off via multivendor_mode=false without breaking single-store pages.
+
+Testing: Unit tests for banner scheduler; e2e tests for buyer purchase and banner behavior; manual QA on staging.
+
+Rollout plan (must follow)
+
+Backup DB and file storage.
+
+Deploy backend changes behind feature flag (do not enable).
+
+Deploy frontend changes (feature gated).
+
+Run migrations + seed templates.
+
+QA in staging: run acceptance tests.
+
+Enable flag for admin users only, verify banner manager and templates.
+
+Full enable to public if all OK.
+
+Monitor logs and metrics; rollback if errors.
+
+Deliverables (what to return)
+
+DB migration SQL + seed file for templates.
+
+Backend API controllers and route docs (OpenAPI spec or Postman collection).
+
+Frontend components: Banner Manager (admin), Homepage Carousel, Category Grid, RedirectPage.
+
+Admin UI screens for templates, calendar mapping, footer, store approval.
+
+Test plan and sample automated tests (unit + e2e).
+
+Rollback script and quick rollback instructions.
+
+Short developer README explaining how to toggle feature flags and where code changes are placed.
+
+Important reminder: Do not refactor or remove working Single-Store code. Any UI/behavior changes must only occur when settings.multivendor_mode == true. Provide code diffs/PRs with clear file lists and migration steps

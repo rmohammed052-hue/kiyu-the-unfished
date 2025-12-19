@@ -1,0 +1,310 @@
+✅ 1. GENERAL REQUIRED UPDATES
+
+These apply to every page, dashboard, and component:
+
+✅ Clickable Navigation
+
+Every button, link, icon, and card must be fully clickable and redirect to the correct page.
+
+If a page does not exist, create it automatically.
+
+No dead buttons anywhere in the system.
+
+✅ Live Auto Search
+
+Auto-search products as the user types.
+
+Uses debounce (300ms).
+
+Searches product name, category, tags.
+
+
+
+✅ Product Detail Page
+
+Must include ALL of the following:
+
+Up to 5 images
+
+1 product video
+
+Variants (sizes, colors, etc.)
+
+Cost price (strikethrough) + Selling price (bold)
+
+Detailed description
+
+Related products
+
+Customer reviews (stars + comments)
+
+Share via WhatsApp button
+
+
+
+✅ Wishlist
+
+Heart toggle on product grid and product detail.
+
+Saved per user (userId).
+
+“My Wishlist” page must exist and work.
+
+✅ 3. CART & CHECKOUT SYSTEM
+✅ Cart Icon
+
+
+
+✅ Order Breakdown
+
+Subtotal
+
+Delivery Fee (based on zone)
+
+Processing Fee: 1.95%
+
+Final total (no taxes)
+
+Auto-updates with currency changes.
+
+✅ Delivery Methods
+
+Pickup
+
+Bus
+
+Rider
+
+✅ Checkout
+
+Requests user location (GPS)
+
+Auto-fills address
+
+Sends coordinates for dispatch routing
+
+Supports Paystack multi-currency
+
+✅ 4. DELIVERY SYSTEM UPDATES
+✅ Delivery Zones
+
+Managed by Super Admin
+
+Admin defines fees per zone
+
+Buyers see fees dynamically
+
+✅ Rider Functionality
+
+Rider must have a complete dashboard with:
+
+Assigned deliveries
+
+Accept/Reject
+
+Live location updates
+
+Navigation via OpenStreetMap
+
+Upload delivery proof
+
+Confirm delivery via:
+✅ User QR code
+✅ Or user confirmation button
+
+Earnings & delivery history
+
+Profile page
+
+✅ Live Tracking
+
+Buyers must see rider live on a moving map.
+
+Sellers and admin also see tracking.
+
+✅ Delivery Confirmation
+
+If rider reaches buyer location:
+
+App shows a confirmation prompt every 2 minutes
+
+Buyer can “Confirm” or “Deny”
+
+On confirmation:
+Seller, Rider, Admin all receive “Delivered” notification
+
+✅ 5. CHAT SYSTEM (ADMIN-CENTRIC)
+✅ Important Change
+
+
+✅ seller ↔ rider chat
+✅ Admin can chat with anyone
+✅ Admin → Buyer
+✅ Admin → Seller
+✅ Admin → Rider
+✅ Admin → Agent
+    Agent - seller
+✅ Admin always sees all conversations
+
+✅ Chat UI Requirements
+
+WhatsApp-like design
+
+Chat list page
+
+Individual chat page
+
+Supports:
+✅ Text
+✅ Images
+✅ Voice notes
+
+Real-time messages
+
+Typing indicator
+
+Read receipts
+
+Works on all dashboards
+
+✅ 6. MULTI-LANGUAGE & MULTI-CURRENCY
+✅ Languages (Official Only)
+
+English
+
+French
+
+Arabic
+
+Spanish
+
+Chinese (Mandarin)
+
+✅ Translate everything:
+UI text, buttons, labels, modals, dashboards, notifications.
+
+✅ Currency Conversion
+
+Currencies:
+
+GHS (default)
+
+USD
+
+EUR
+
+GBP
+
+AED
+
+SAR
+
+CAD
+
+✅ Use exchangerate.host
+✅ Converts:
+
+Product prices
+
+Delivery fees
+
+Processing fee
+
+Final total
+✅ Must auto-update across entire app.
+
+✅ 7. FOOTER DYNAMIC CONTROL
+
+Footer (logo, contacts, social media, links) must be editable from Admin Dashboard.
+
+Changes update instantly.
+
+✅ 8. SECURITY FEATURES
+✅ Optional User Security
+
+PIN lock
+
+Fingerprint unlock
+
+Face unlock
+
+Users can toggle these in their settings.
+
+✅ 9. DASHBOARD CREATION & FIXES
+✅ Create & fully implement all dashboards:
+
+Admin Dashboard
+
+Seller Dashboard
+
+Rider Dashboard
+
+Customer Agent Dashboard
+
+Each must contain:
+
+✅ Working navigation
+✅ Dynamic data
+✅ Complete pages
+✅ Charts/analytics
+✅ Working profile page
+✅ Working notifications
+✅ Real-time updates
+
+✅ Dummy Login Accounts (in README)
+Role	Email	Password	Redirect
+Admin	admin@kiyumart.com
+	admin123	/dashboard/admin
+Seller	seller@kiyumart.com
+	seller123	/dashboard/seller
+Rider	rider@kiyumart.com
+	rider123	/dashboard/rider
+Agent	agent@kiyumart.com
+	agent123	/dashboard/agent
+
+All must work.
+
+✅ 10. LOCATION SYSTEM
+
+Request live location permission
+
+Detect precise coordinates
+
+Auto-fill user address
+
+Use coordinates for rider navigation
+
+Buyer sees rider moving in real time
+
+Admin & seller see delivery status live
+
+✅ 11. PROFILE SYSTEM
+
+Fix profile icon → must redirect to profile page
+
+Show placeholder profile image for logged user
+
+Allow user to upload/change profile photo
+
+Show relevant info depending on user role
+
+✅ 12. FINAL VALIDATION REQUIREMENT
+
+Before completing the build, AI must:
+
+✅ Check all features exist
+✅ Check all dashboards load correctly
+✅ Check all routing works
+✅ Check all buttons redirect correctly
+✅ Check languages translate correctly
+✅ Check currencies convert everywhere
+✅ Check rider live tracking works
+✅ Check delivery confirmation works
+✅ Check cart + checkout calculations are correct
+✅ Check product detail is complete
+✅ Check admin chat works with all roles
+✅ Check dummy logins work
+✅ Check no missing pages
+✅ Check no broken components
+✅ Check no console errors
+

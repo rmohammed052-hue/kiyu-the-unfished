@@ -1,0 +1,87 @@
+All fixes & features in the Admin Dashboard
+
+Act as the world’s most intelligent senior full-stack software engineer, GitHub expert, and system architect with full access to the project repository, admin dashboard code, backend, and database. All work must be focused inside the Admin Dashboard. Your mission is to diagnose, fix, and implement the items listed below — ensuring everything updates instantly and the dashboard is fully functional, stable, and real-time.
+
+Scope: Everything is inside the Admin Dashboard
+
+All issues, integrations, UI changes, and new pages/controls must be implemented, fixed, or reverted within the Admin Dashboard only. Do not change unrelated public pages, mobile apps, or external services.
+
+Tasks (Admin Dashboard)
+
+Orders & Recent Orders
+
+Fix why Orders and Recent Orders show empty despite seeded data.
+
+Trace and repair API calls, database queries, state management, and rendering within the Admin Dashboard.
+
+Ensure orders display full details (ID, customer, rider, status, total, timestamps).
+
+Make data appear instantly (real-time or live-refresh) inside the Admin Dashboard.
+
+Live Delivery Map (Open-Source)
+
+Fix the non-clickable Live Delivery button in the Admin Dashboard.
+
+Integrate or repair a free open-source map (OpenStreetMap + Leaflet/MapLibre) inside the Admin Dashboard.
+
+Show real-time rider markers, routes, rider name/photo, and delivery progress — auto-updating within the dashboard view.
+
+Notifications (Admin Dashboard)
+
+Fix empty notifications panel inside the Admin Dashboard.
+
+Ensure events (new order, order update, rider status, messages) generate notifications and appear immediately in the Admin Dashboard with timestamps and read/unread states.
+
+Messaging System (Admin Dashboard)
+
+Restore message ticks (sent/delivered/read) and typing indicators within the Admin Dashboard chat UI.
+
+Ensure messages update live and display accurate timestamps and delivery status in the Admin Dashboard.
+
+Rider Management & Assignment (Admin Dashboard)
+
+Build/fix a Rider Assignment page inside the Admin Dashboard showing all riders and live status (Available, Busy, Delivering, Offline).
+
+Allow admins to manually assign riders to orders from this page — update order and rider status immediately within the Admin Dashboard.
+
+Fix Edit Rider so it opens the correct edit form in the Admin Dashboard and preloads rider data.
+
+Dynamic Store Type Banners (Admin Dashboard)
+
+Implement dynamic banner images for each store type — selecting a store type in the Admin Dashboard must automatically update the banner across the dashboard and app preview.
+
+Ensure banners are responsive, cached, and update instantly without full page reloads.
+
+Permissions & Branding (Admin Dashboard)
+
+Fix the non-clickable Permissions button so admins can view/edit roles inside the Admin Dashboard.
+
+Fix Branding settings in the Admin Dashboard (logo, colors, name) so changes apply immediately and persist after reload.
+
+General
+
+Confirm every fix takes effect inside the Admin Dashboard — no empty states, no non-clickable buttons, and no ignored saves.
+
+Use only free open-source mapping tools for the map integration.
+
+Maintain data integrity and do not break unrelated logic or external services.
+
+Use real-time update mechanisms available in the project (WebSocket, Firestore listeners, server-sent events, or polling) as appropriate — all updates must reflect in the Admin Dashboard UI instantly.
+
+Verification & Deliverables (Admin Dashboard)
+
+Provide a test plan and run checks that confirm:
+
+Orders and Recent Orders load correctly in the dashboard.
+
+Live Delivery map loads and shows rider movement in real time inside the dashboard.
+
+Notifications appear immediately in the dashboard.
+
+Messaging ticks, typing, and delivery statuses work in the dashboard.
+
+Rider assignment, Edit Rider, Permissions, and Branding controls all function in the dashboard.
+
+Dynamic banners update immediately when store type is changed in the dashboard.
+
+Commit changes with clear messages and include a summary of files modified and the specific admin dashboard components fixed/added.

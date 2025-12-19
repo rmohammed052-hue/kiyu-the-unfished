@@ -1,0 +1,213 @@
+✅ Improved Specification for Multi-Vendor Mode Homepage & Category Behavior
+
+When Multi-Vendor Mode is ON, the entire app should switch from a single-store fashion layout to a unified marketplace layout.
+The goals:
+
+✅ Central marketplace homepage
+✅ All store categories displayed equally
+✅ Category components shrink dynamically when more stores/categories are added
+✅ Avoid overlap, excessive spacing, or broken alignment
+✅ Super Admin controls all UI content & layout styles in multi-vendor mode
+
+✅ 1. CATEGORY BEHAVIOR IN MULTI-VENDOR MODE
+✅ Single Store → Becomes a Single Category Tile
+
+If the system was originally a single fashion store (as shown in your screenshot), then:
+
+That entire fashion store becomes ONE small category.
+
+The category name = Fashion or the store’s category name you assign.
+
+The big hero cards (Elegant Abayas, Evening Wear, Hijabs, etc.) must not appear in multi-vendor mode.
+
+✅ All Vendor Stores = One Category Each
+
+Every approved vendor/store becomes a category tile:
+
+Each store = one category card
+
+Image = vendor's store logo or banner thumbnail
+
+Title = vendor store name
+
+Subtitle = number of products in that store
+
+✅ Dynamic Auto-Resizing of Category Cards
+
+The category grid must:
+
+Automatically shrink cards when new stores are added
+
+Maintain equal spacing
+
+Avoid overflow or weird spacing gaps
+
+Always appear clean, balanced, and symmetrical
+
+Think: responsive Pinterest-style grid but uniform card height.
+
+Rule:
+
+If categories ≤ 3 → show large cards (1 row)
+If categories 4–6 → medium cards (2 rows)
+If categories > 6 → auto-responsive grid with small cards
+
+✅ 2. HOMEPAGE IN MULTI-VENDOR MODE
+
+The homepage becomes a centralized marketplace:
+
+✅ Featured Products (Global)
+
+Show all vendors’ featured products, not just the single-store fashion products.
+
+✅ New Arrivals (Global)
+
+Fetch all product categories from all stores.
+
+✅ Trending / Best Sellers (Global)
+
+Top products across all stores, not filtered by fashion.
+
+✅ Category Strip (Global)
+
+A horizontally scrollable or grid-based category list of all stores.
+
+✅ Admin Controls All Homepage Elements
+
+The Super Admin can change:
+
+Homepage banner
+
+Homepage tagline / hero text
+
+Featured section layout (grid/carousel)
+
+Category display style:
+
+Grid (default)
+
+Horizontal scrolling
+
+Dropdown categories
+
+Minimal icons only
+
+Number of categories visible before collapse
+
+Product blocks (size, padding, display type)
+
+Everything in multi-vendor mode is platform-level and not vendor-controllable.
+
+✅ 3. STORE LANDING PAGE (Vendor Page) – Multi-Vendor Mode
+
+Each vendor receives a store landing page, BUT:
+
+✅ Super Admin controls page layout
+
+Even though sellers manage products, the store design itself must be:
+
+Admin-controlled
+
+Locked from vendor modification
+
+Unified across all stores
+
+Including:
+
+Banner style or default banner
+
+Category layout
+
+Section appearance
+
+Typography
+
+Buttons
+
+Product card layout
+
+What sections appear or don’t appear
+
+Vendor controls only:
+
+Products
+
+Prices
+
+Discounts
+
+Stock
+
+Store metadata (logo, name, description)
+
+Everything else is platform-wide controlled by Super Admin.
+
+✅ 4. HOMEPAGE BANNER IN MULTI-VENDOR MODE
+
+The multi-vendor banner MUST:
+
+✅ Not be Islamic-themed
+✅ Be neutral and centered
+✅ Match all store types
+✅ Show a global marketplace feel
+✅ Be fully changeable by the Super Admin
+
+Admin can choose:
+
+Banner image
+
+Banner text
+
+CTA buttons
+
+Banner height/size
+
+Whether banner appears above or below category grid
+
+✅ 5. LAYOUT & RESPONSIVENESS REQUIREMENTS
+✅ Prevent Overlap
+
+Category tiles must:
+
+Shrink proportionally
+
+Auto-wrap
+
+Maintain fixed aspect ratio
+
+Use CSS grid or FlutterFlow responsive wrap
+
+Avoid overflow on small devices
+
+✅ Spacing Rules
+
+Cards must always have equal horizontal spacing
+
+Vertical spacing must be consistent regardless of tile count
+
+No empty gaps or stretched cards
+
+✅ Visual Cleanliness
+
+Rounded corners
+
+Uniform shadows
+
+Even padding
+
+Same height for all category tiles
+
+Consistent font sizes across all stores
+
+✅ 6. WHAT TO REMOVE IN MULTI-VENDOR MODE
+
+Remove the entire fashion-based homepage, including:
+
+❌ Elegant Abayas section
+❌ Evening Wear section
+❌ Hijabs & Accessories
+❌ Any Islamic-fashion specific hero components
+❌ Fashion-only homepage categories
+❌ Single-store banners
+
+Only the unified marketplace should remain.

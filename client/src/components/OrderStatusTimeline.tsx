@@ -1,0 +1,135 @@
+import { Check, Clock, Package, Truck, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface OrderStatusTimelineProps {
+  currentStatus: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deliveredAt?: string;
+  className?: string;
+}
+
+const statusSteps = [
+  { key: "pending", label: "Order Placed", icon: Clock },
+  { key: "processing", label: "Processing", icon: Package },
+  { key: "delivering", label: "Delivering", icon: Truck },
+  { key: "delivered", label: "Delivered", icon: CheckCircle2 },
+];
+
+const statusOrder = ["pending", "processing", "delivering", "delivered"];
+
+export default function OrderStatusTimeline({ 
+  currentStatus, 
+  createdAt, 
+  updatedAt,
+  deliveredAt,
+  className 
+}: OrderStatusTimelineProps) {
+  // Handle cancelled and disputed separately
+  const isCancelled = currentStatus === "cancelled";
+  const isDisputed = currentStatus === "disputed";
+  const currentIndex = statusOrder.indexOf(currentStatus);
+
+  if (isCancelled) {
+    return (
+      <div className={cn("flex items-center gap-3 p-4 bg-destructive/10 rounded-lg border border-destructive/20", className)} data-testid="timeline-cancelled">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center">
+          <XCircle className="h-5 w-5 text-destructive" />
+        </div>
+        <div>
+          <p className="font-semibold text-destructive">Order Cancelled</p>
+          <p className="text-sm text-muted-foreground">This order has been cancelled</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isDisputed) {
+    return (
+      <div className={cn("flex items-center gap-3 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20", className)} data-testid="timeline-disputed">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
+          <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
+        </div>
+        <div>
+          <p className="font-semibold text-yellow-700 dark:text-yellow-500">Order Disputed</p>
+          <p className="text-sm text-muted-foreground">This order is under review</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("py-4", className)} data-testid="timeline-normal">
+      <div className="flex items-center justify-between">
+        {statusSteps.map((step, index) => {
+          const isCompleted = index <= currentIndex;
+          const isCurrent = index === currentIndex;
+          const Icon = step.icon;
+          const isLast = index === statusSteps.length - 1;
+
+          return (
+            <div key={step.key} className="flex items-center flex-1" data-testid={`timeline-step-${step.key}`}>
+              <div className="flex flex-col items-center relative">
+                {/* Icon Circle */}
+                <div
+                  className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center transition-all",
+                    isCompleted
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                  data-testid={`icon-${step.key}`}
+                >
+                  {isCompleted && !isCurrent ? (
+                    <Check className="h-5 w-5" />
+                  ) : (
+                    <Icon className="h-5 w-5" />
+                  )}
+                </div>
+
+                {/* Label */}
+                <div className="mt-2 text-center">
+                  <p
+                    className={cn(
+                      "text-xs font-medium",
+                      isCompleted ? "text-foreground" : "text-muted-foreground"
+                    )}
+                    data-testid={`label-${step.key}`}
+                  >
+                    {step.label}
+                  </p>
+                  {isCurrent && (
+                    <p className="text-xs text-primary mt-1" data-testid={`status-current-${step.key}`}>
+                      Current
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Connecting Line */}
+              {!isLast && (
+                <div
+                  className={cn(
+                    "flex-1 h-0.5 mx-2 transition-all",
+                    isCompleted ? "bg-primary" : "bg-muted"
+                  )}
+                  data-testid={`line-${step.key}`}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Timestamp Information */}
+      {currentStatus === "delivered" && deliveredAt && (
+        <div className="mt-4 text-center" data-testid="delivery-timestamp">
+          <p className="text-sm text-muted-foreground">
+            Delivered on {new Date(deliveredAt).toLocaleDateString()} at{" "}
+            {new Date(deliveredAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

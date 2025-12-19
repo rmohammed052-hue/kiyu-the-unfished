@@ -1,0 +1,424 @@
+🚀 KiyuMart — Comprehensive MVP Build Instruction (for Replit AI)
+🧩 OVERVIEW
+
+You are to build a cross-platform e-commerce software called KiyuMart, using React (Vite) for frontend and Node.js + Express for backend.
+Data should be stored in MongoDB, and all files (images/videos) in Cloudinary.
+The project must be 100% exportable and run independently of Replit.
+
+KiyuMart is both a single-store fashion marketplace and a multi-vendor marketplace, switchable by the Super Admin.
+In single-store mode, only one store is visible (like a full fashion app).
+In multi-vendor mode, sellers can register and sell, and the Super Admin can approve or manage them.
+
+The app must have dynamic control, delivery management, Paystack integration, real-time chat, in-app calling, multi-language, multi-currency, fingerprint & PIN security, and fully dynamic configuration from the Super Admin dashboard.
+
+🏗️ TECH STACK
+
+Frontend: React (Vite), Tailwind CSS, Zustand or Redux for state management
+
+Backend: Node.js (Express.js)
+
+Database: MongoDB (Atlas)
+
+File Storage: Cloudinary
+
+Authentication: JWT + bcrypt
+
+Payment: Paystack API (Ghana, NG, global)
+
+Currency Conversion: exchangerate.host
+ (free unlimited API)
+
+Map System: OpenStreetMap (via Leaflet.js)
+
+Chat System: WebSocket (Socket.io)
+
+Deployment: Frontend → Netlify / Vercel | Backend → Render / Railway
+
+Realtime Notifications: WebSocket (Socket.io)
+
+Security: HTTPS, bcrypt, 2FA (optional), biometric login (fingerprint, face unlock, PIN)
+
+🧠 APP MODES
+
+Single Store Mode (Default Fashion Store):
+
+Only the fashion store is visible.
+
+Super Admin manages products, delivery, and staff.
+
+All store data comes from admin dashboard.
+
+Multi-Vendor Mode:
+
+Super Admin can toggle a switch to activate vendor visibility.
+
+Approved sellers’ stores appear publicly.
+
+Admin can control visibility and run paid ads for vendors.
+
+👥 USER ROLES
+1. Super Admin
+
+Full control over platform
+
+Manage users (sellers, riders, agents, buyers)
+
+Approve/reject seller or rider applications
+
+Suspend or activate any account
+
+Configure delivery zones, pricing, payment rates
+
+Customize logo, onboarding images, colors, text
+
+Edit homepage banners, promo ads
+
+Manage Paystack keys and processing fee %
+
+Manage chat visibility, notifications, and security options
+
+Manage customer support agents
+
+Switch between Single Store and Multi-Vendor mode
+
+Manage in-app ads and promotional placements
+
+View analytics dashboard (sales, users, revenue, delivery stats)
+
+2. Seller (Vendor)
+
+Apply for account via “Become a Seller” form
+
+Manage their products:
+
+Add/Edit/Delete
+
+Upload up to 5 images + 1 video per product
+
+Rich descriptions, tags, categories
+
+Set product pricing, discount, and stock
+
+Receive and manage orders
+
+Assign dispatch riders
+
+Chat with admin or riders
+
+View analytics (sales, revenue, top products)
+
+Manage payments and transaction history
+
+Get badges (“Top Seller”, “Fast Delivery”, etc.)
+
+3. Buyer (Customer)
+
+Browse fashion store or vendors
+
+Add items to cart
+
+Choose delivery method: Pickup, Bus, or Rider
+
+See delivery fee calculated dynamically
+
+Checkout with Paystack
+
+Receive invoice and digital receipt (PDF)
+
+Real-time order tracking via OpenStreetMap
+
+Confirm delivery via QR code scan or confirm button
+
+Chat with customer agent or admin
+
+Use biometric or PIN login
+
+4. Dispatch Rider
+
+Apply for account with ID, license, and vehicle info
+
+View assigned deliveries
+
+Accept or reject delivery
+
+Track delivery on map
+
+Chat with sellers or admin
+
+Confirm delivery by scanning user’s QR code
+
+Upload delivery proof (photo/signature)
+
+Earn from completed deliveries
+
+5. Customer Agent
+
+Admin-assigned role
+
+Chat directly with buyers to resolve issues
+
+See only necessary buyer info
+
+Handle refund requests and complaints
+
+💸 PAYMENT SYSTEM (PAYSTACK)
+
+Supports Cards, Mobile Money (MTN, Vodafone, AirtelTigo), Bank Transfers, and QR Code.
+
+Shows Processing Fee (1.95%) in all order breakdowns.
+
+Receipts generated automatically after payment success.
+
+Failed payments give retry option and hold order for 30 minutes.
+
+Webhook verifies transactions automatically.
+
+Admin and sellers get earnings updates instantly.
+
+🌍 MULTI-CURRENCY + EXCHANGE RATE
+
+Default currency: Ghana Cedis (GHS)
+
+Auto-convert prices using exchangerate.host API (real-time, free).
+
+Buyers can switch currency manually (USD, NGN, EUR, GBP).
+
+Prices and totals reflect conversion instantly.
+
+📍 DELIVERY SYSTEM
+
+Admin defines zones (Accra, Kumasi, etc.) and delivery rates.
+
+Buyers choose Pickup, Bus, or Rider.
+
+Delivery fee auto-calculated based on zone.
+
+Riders see routes in real-time using OpenStreetMap + Leaflet.
+
+Seller/admin can assign riders manually before confirmation.
+
+QR Code confirmation:
+
+Buyer shows QR on their phone.
+
+Rider scans via camera to confirm.
+
+System marks as Delivered.
+
+Notifications sent to all parties.
+
+If buyer denies delivery, order status = “Disputed” and admin notified.
+
+💬 REAL-TIME CHAT + IN-APP CALL
+
+Chat UI exactly like WhatsApp:
+
+Contact list
+
+Profile picture + online status
+
+Real-time messages (Socket.io)
+
+Send text, images, voice messages
+
+Voice call feature between:
+
+Buyer ↔ Rider
+
+Seller ↔ Rider
+
+Admin ↔ Any user
+
+Phone numbers hidden for privacy
+
+Admin can chat with all users from dashboard.
+
+Agents can chat with buyers only.
+
+🔐 SECURITY FEATURES
+
+Login via Email + Password
+
+Optional PIN, Fingerprint, Face Unlock (device-based)
+
+JWT-based session management
+
+Two-Factor Authentication (email or SMS)
+
+Password reset with OTP
+
+All data encrypted at rest and in transit
+
+🌐 MULTI-LANGUAGE SUPPORT
+
+Languages: English, French, Spanish, Arabic, Chinese
+
+RTL support for Arabic
+
+Language selector in header
+
+All app texts and emails translatable
+
+📊 ANALYTICS DASHBOARDS
+For Admin:
+
+Total sales & revenue
+
+Commission breakdown
+
+Active vendors, riders, buyers
+
+Top-performing sellers
+
+Product categories revenue
+
+Geographic stats
+
+Ad performance tracking
+
+For Sellers:
+
+Sales graphs
+
+Order summaries
+
+Top-selling products
+
+Pending payouts
+
+For Riders:
+
+Completed deliveries
+
+Ratings
+
+Earnings by date
+
+📱 DESIGN & UI/UX
+
+Cross-platform: React + responsive CSS
+
+Mobile layout behaves like an app (installable PWA)
+
+Looks and feels native on Android/iPhone browsers
+
+Web layout optimized for desktop users
+
+Color scheme controlled by admin dynamically
+
+🧰 OPEN SOURCE TOOLS USED
+
+OpenStreetMap + Leaflet.js → Map + Live Tracking
+
+Cloudinary → Free image hosting
+
+Socket.io → Real-time chat
+
+Exchangerate.host → Currency conversion
+
+Paystack API → Payments
+
+React Vite + Tailwind → Frontend
+
+MongoDB Atlas → Database
+
+⚙️ PHASED DEVELOPMENT PLAN
+PHASE 1: Project Setup
+
+Create project folders (frontend + backend)
+
+Configure MongoDB connection
+
+Set up environment variables
+
+Add Tailwind CSS, Cloudinary, Socket.io setup
+
+PHASE 2: Authentication & Roles
+
+Build login/signup with JWT
+
+Create user roles (Admin, Seller, Rider, Buyer, Agent)
+
+Setup PIN/Fingerprint/Face unlock simulation
+
+PHASE 3: Admin Dashboard
+
+Manage users (CRUD)
+
+Configure appearance (logo, onboarding, colors)
+
+Manage delivery zones
+
+Toggle single-store / multi-vendor mode
+
+Manage Paystack settings
+
+PHASE 4: Seller Dashboard
+
+Product CRUD (upload images/video)
+
+Inventory & analytics
+
+Order management
+
+Assign riders
+
+PHASE 5: Buyer Module
+
+Product browsing, filters
+
+Add to cart
+
+Checkout with delivery method and Paystack
+
+QR-based confirmation after delivery
+
+PHASE 6: Rider Module
+
+Delivery assignment
+
+Live location tracking
+
+Order confirmation via QR
+
+Earnings view
+
+PHASE 7: Chat System
+
+Build WhatsApp-like UI
+
+Real-time text, photo, and voice chat
+
+Admin access to all chats
+
+PHASE 8: Analytics & Reports
+
+Graphs, charts for admin and sellers
+
+Export to PDF/Excel
+
+PHASE 9: Testing & Deployment
+
+Test all user roles
+
+Deploy backend to Render
+
+Deploy frontend to Netlify
+
+Ensure project runs fully independent from Replit
+
+📄 README GUIDE (to auto-generate later)
+
+The README.md should include:
+
+Project setup instructions
+
+MongoDB + Cloudinary + Paystack setup
+
+Map API setup (OpenStreetMap/Leaflet)
+
+Deployment steps (Render/Netlify)
+
+Troubleshooting
+
+Environment variable examples

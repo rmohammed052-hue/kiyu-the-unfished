@@ -1,0 +1,91 @@
+Act as the world’s most intelligent and highly skilled senior full-stack software engineer and GitHub expert.
+You have full access to the codebase, admin dashboard, database, and frontend components.
+Your mission is to diagnose, fix, and optimize all the following issues without breaking existing logic — using free open-source map tools for live delivery tracking.
+
+🧩 ISSUES TO FIX
+
+Orders & Recent Orders (Admin Dashboard)
+
+Both the Orders page and Recent Orders section currently display empty, even after seeding data.
+
+Investigate backend endpoints, data fetching logic, and state management.
+
+Fix all issues so both sections display real seeded orders with proper fields: order ID, customer, rider, total, and delivery status.
+
+Live Delivery Map (Open Source Map Integration)
+
+There is no live delivery map to view real-time delivery progress or rider positions.
+
+The “Live Delivery” button is currently not clickable — fix it so it correctly opens the live tracking interface.
+
+Integrate or repair OpenStreetMap / Leaflet / MapLibre (free open-source map tools).
+
+Enable real-time rider tracking:
+
+Show live rider markers with updated positions.
+
+Display delivery routes dynamically.
+
+Refresh or update map automatically as riders move.
+
+Notifications
+
+Notifications panel shows empty even after new orders or messages.
+
+Fix notification logic so all key events trigger notifications (new orders, messages, rider updates, delivery changes).
+
+Ensure they appear in the dashboard instantly — use real-time update methods if available (WebSocket, Firestore listener, etc.).
+
+Messaging System
+
+The chat section does not show the “tick” or message-sent confirmation.
+
+Diagnose and fix message status logic (sent, delivered, read).
+
+Ensure real-time updates between admin and riders/customers work correctly.
+
+Rider Management
+
+The “Edit Rider” button incorrectly redirects to the main dashboard instead of the rider edit form.
+
+Fix route links or navigation logic to open the correct edit page with prefilled rider data.
+
+Permissions Control
+
+The Permissions button is not clickable in the admin dashboard.
+
+Fix it so admins can access the permissions module, edit user roles, and save changes properly.
+
+Branding Settings
+
+Branding options (logo, colors, theme name) don’t apply changes after saving.
+
+Fix bindings and save logic so changes are applied instantly and persist after reload.
+
+⚙️ REQUIREMENTS
+
+Maintain full system stability and data integrity — do not break existing routes or APIs.
+
+Use only open-source maps (OpenStreetMap, Leaflet, or MapLibre) for live tracking — no paid services.
+
+Ensure all UI updates and fixes blend seamlessly with the current dashboard theme.
+
+All functions (orders, map, messages, permissions, notifications) must work in real time and update instantly.
+
+After completion, run comprehensive validation tests to confirm all issues are resolved with zero console or runtime errors.
+
+✅ EXPECTED OUTCOME
+
+A fully repaired and optimized Admin Dashboard where:
+
+Orders and recent orders load correctly.
+
+A functional open-source live delivery map displays riders in real time.
+
+Notifications update dynamically.
+
+Messaging shows proper ticks and timestamps.
+
+The Edit Rider, Permissions, and Branding buttons all work flawlessly.
+
+UI/UX remains smooth, fast, and visually consistent.

@@ -1,0 +1,138 @@
+import { useParams } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { useLanguage } from "@/contexts/LanguageContext";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import ProductCard from "@/components/ProductCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
+
+interface Product {
+  id: string;
+  name: string;
+  price: string;
+  costPrice?: string;
+  images: string[];
+  discount: number;
+  ratings: string;
+  totalRatings: number;
+  category: string;
+}
+
+const categoryInfo: Record<string, { title: string; description: string }> = {
+  abayas: {
+    title: "Elegant Abayas",
+    description: "Discover our stunning collection of elegant abayas featuring luxurious fabrics and intricate embroidery",
+  },
+  hijabs: {
+    title: "Hijabs & Accessories",
+    description: "Beautiful hijabs and modest accessories to complete your Islamic wardrobe",
+  },
+  evening: {
+    title: "Evening Wear",
+    description: "Sophisticated evening abayas and dresses perfect for special occasions",
+  },
+};
+
+export default function CategoryPage() {
+  const { id } = useParams();
+  const { currencySymbol, t } = useLanguage();
+
+  const { data: products = [], isLoading } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+  });
+
+  const categoryProducts = products.filter((p) => p.category === id);
+  const categoryData = categoryInfo[id || ""] || {
+    title: "Category",
+    description: "Browse our collection",
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header
+        onSearch={(query) => console.log("Search:", query)}
+        onCartClick={() => {}}
+        data-testid="header-category"
+      />
+
+      <main className="flex-1">
+        <div className="bg-muted py-12 mb-8">
+          <div className="max-w-7xl mx-auto px-4">
+            <h1
+              className="text-4xl font-bold mb-2"
+              data-testid="text-category-title"
+            >
+              {categoryData.title}
+            </h1>
+            <p
+              className="text-lg text-muted-foreground"
+              data-testid="text-category-description"
+            >
+              {categoryData.description}
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {categoryProducts.length} products
+            </p>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 pb-12">
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <Card key={i} className="overflow-hidden">
+                  <Skeleton className="aspect-[3/4] w-full" />
+                  <div className="p-4 space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                    <Skeleton className="h-4 w-1/3" />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : categoryProducts.length === 0 ? (
+            <div className="text-center py-16">
+              <h3 className="text-xl font-semibold mb-2">
+                No products found in this category
+              </h3>
+              <p className="text-muted-foreground">
+                Check back soon for new arrivals!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {categoryProducts.map((product) => {
+                const sellingPrice = parseFloat(product.price);
+                const originalPrice = product.costPrice
+                  ? parseFloat(product.costPrice)
+                  : null;
+                const calculatedDiscount = originalPrice && originalPrice > sellingPrice
+                  ? Math.round(((originalPrice - sellingPrice) / originalPrice) * 100)
+                  : 0;
+
+                return (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    price={sellingPrice}
+                    costPrice={originalPrice || undefined}
+                    currency={currencySymbol}
+                    image={product.images[0]}
+                    discount={calculatedDiscount}
+                    rating={parseFloat(product.ratings) || 0}
+                    reviewCount={product.totalRatings}
+                    onToggleWishlist={(id) => console.log("Wishlist toggled:", id)}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}

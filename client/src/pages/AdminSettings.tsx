@@ -1,0 +1,876 @@
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import DashboardLayout from "@/components/DashboardLayout";
+import { useAuth } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Save, Settings2, CreditCard, Mail, Palette, DollarSign, Image as ImageIcon, ArrowLeft, Cloud } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const settingsSchema = z.object({
+  platformName: z.string().min(1, "Platform name is required"),
+  isMultiVendor: z.boolean(),
+  allowSellerRegistration: z.boolean(),
+  allowRiderRegistration: z.boolean(),
+  shopDisplayMode: z.enum(["by-store", "by-category"]).optional(),
+  primaryStoreId: z.string().optional().nullable(),
+  primaryColor: z.string().regex(/^#([A-Fa-f0-9]{6})$/, "Must be a valid hex color"),
+  defaultCurrency: z.string(),
+  paystackPublicKey: z.string().optional(),
+  paystackSecretKey: z.string().optional(),
+  processingFeePercent: z.string().min(0),
+  defaultCommissionRate: z.string().min(0).max(100),
+  minimumPayoutAmount: z.string().min(0),
+  cloudinaryCloudName: z.string().optional(),
+  cloudinaryApiKey: z.string().optional(),
+  cloudinaryApiSecret: z.string().optional(),
+  contactPhone: z.string().min(1, "Contact phone is required"),
+  contactEmail: z.string().email("Must be a valid email"),
+  contactAddress: z.string().min(1, "Contact address is required"),
+  facebookUrl: z.string().url().optional().or(z.literal("")),
+  instagramUrl: z.string().url().optional().or(z.literal("")),
+  twitterUrl: z.string().url().optional().or(z.literal("")),
+  footerDescription: z.string().min(1, "Footer description is required"),
+  adsEnabled: z.boolean(),
+  heroBannerAdImage: z.string().url().optional().or(z.literal("")),
+  heroBannerAdUrl: z.string().url().optional().or(z.literal("")),
+  sidebarAdImage: z.string().url().optional().or(z.literal("")),
+  sidebarAdUrl: z.string().url().optional().or(z.literal("")),
+  footerAdImage: z.string().url().optional().or(z.literal("")),
+  footerAdUrl: z.string().url().optional().or(z.literal("")),
+  productPageAdImage: z.string().url().optional().or(z.literal("")),
+  productPageAdUrl: z.string().url().optional().or(z.literal("")),
+});
+
+type SettingsFormData = z.infer<typeof settingsSchema>;
+
+interface PlatformSettings extends SettingsFormData {
+  id: string;
+  logo?: string;
+  onboardingImages?: string[];
+  updatedAt: string;
+}
+
+export default function AdminSettings() {
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState("general");
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  const { data: settings, isLoading } = useQuery<PlatformSettings>({
+    queryKey: ["/api/settings"],
+  });
+
+  const { data: stores = [] } = useQuery<Array<{id: string; name: string; isActive: boolean}>>({
+    queryKey: ["/api/stores"],
+    queryFn: async () => {
+      const res = await fetch("/api/stores");
+      return res.json();
+    },
+  });
+
+  useEffect(() => {
+    if (!authLoading && (!isAuthenticated || (user?.role !== "admin" && user?.role !== "super_admin"))) {
+      navigate("/auth");
+    }
+  }, [isAuthenticated, authLoading, user, navigate]);
+
+  const form = useForm<SettingsFormData>({
+    resolver: zodResolver(settingsSchema),
+    values: settings ? {
+      platformName: settings.platformName,
+      isMultiVendor: settings.isMultiVendor,
+      allowSellerRegistration: (settings as any).allowSellerRegistration || false,
+      allowRiderRegistration: (settings as any).allowRiderRegistration || false,
+      shopDisplayMode: (settings as any).shopDisplayMode || "by-store",
+      primaryStoreId: (settings as any).primaryStoreId || null,
+      primaryColor: settings.primaryColor,
+      defaultCurrency: settings.defaultCurrency,
+      paystackPublicKey: settings.paystackPublicKey || "",
+      paystackSecretKey: settings.paystackSecretKey || "",
+      processingFeePercent: settings.processingFeePercent,
+      defaultCommissionRate: (settings as any).defaultCommissionRate || "10",
+      minimumPayoutAmount: (settings as any).minimumPayoutAmount || "50",
+      cloudinaryCloudName: (settings as any).cloudinaryCloudName || "",
+      cloudinaryApiKey: (settings as any).cloudinaryApiKey || "",
+      cloudinaryApiSecret: (settings as any).cloudinaryApiSecret || "",
+      contactPhone: settings.contactPhone,
+      contactEmail: settings.contactEmail,
+      contactAddress: settings.contactAddress,
+      facebookUrl: settings.facebookUrl || "",
+      instagramUrl: settings.instagramUrl || "",
+      twitterUrl: settings.twitterUrl || "",
+      footerDescription: settings.footerDescription,
+      adsEnabled: settings.adsEnabled || false,
+      heroBannerAdImage: settings.heroBannerAdImage || "",
+      heroBannerAdUrl: settings.heroBannerAdUrl || "",
+      sidebarAdImage: settings.sidebarAdImage || "",
+      sidebarAdUrl: settings.sidebarAdUrl || "",
+      footerAdImage: settings.footerAdImage || "",
+      footerAdUrl: settings.footerAdUrl || "",
+      productPageAdImage: settings.productPageAdImage || "",
+      productPageAdUrl: settings.productPageAdUrl || "",
+    } : undefined,
+  });
+
+  const updateSettingsMutation = useMutation({
+    mutationFn: async (data: SettingsFormData) => {
+      const res = await apiRequest("PATCH", "/api/settings", data);
+      return res.json();
+    },
+    onSuccess: async () => {
+      // Invalidate and immediately refetch settings to update branding
+      await queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/settings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/platform-settings"] });
+      toast({
+        title: "Settings updated",
+        description: "Platform settings have been saved successfully. Branding colors updated!",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmit = (data: SettingsFormData) => {
+    updateSettingsMutation.mutate(data);
+  };
+
+  if (authLoading || isLoading || !isAuthenticated || (user?.role !== "admin" && user?.role !== "super_admin")) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <DashboardLayout role={user?.role as any} showBackButton>
+      <div className="p-8">
+          <div className="flex items-center gap-4 mb-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => window.history.back()}
+              data-testid="button-back"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold flex items-center gap-2">
+                <Settings2 className="h-8 w-8" />
+                Platform Settings
+              </h1>
+              <p className="text-muted-foreground mt-1">Configure your platform's core settings and preferences</p>
+            </div>
+          </div>
+
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-7 mb-6">
+              <TabsTrigger value="general" data-testid="tab-general">
+                <Settings2 className="h-4 w-4 mr-2" />
+                General
+              </TabsTrigger>
+              <TabsTrigger value="payments" data-testid="tab-payments">
+                <CreditCard className="h-4 w-4 mr-2" />
+                Payments
+              </TabsTrigger>
+              <TabsTrigger value="storage" data-testid="tab-storage">
+                <Cloud className="h-4 w-4 mr-2" />
+                Storage
+              </TabsTrigger>
+              <TabsTrigger value="contact" data-testid="tab-contact">
+                <Mail className="h-4 w-4 mr-2" />
+                Contact
+              </TabsTrigger>
+              <TabsTrigger value="branding" data-testid="tab-branding">
+                <Palette className="h-4 w-4 mr-2" />
+                Branding
+              </TabsTrigger>
+              <TabsTrigger value="currency" data-testid="tab-currency">
+                <DollarSign className="h-4 w-4 mr-2" />
+                Currency
+              </TabsTrigger>
+              <TabsTrigger value="ads" data-testid="tab-ads">
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Ads
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="general" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>General Settings</CardTitle>
+                  <CardDescription>
+                    Configure your platform's basic information
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="platformName">Platform Name</Label>
+                    <Input
+                      id="platformName"
+                      {...form.register("platformName")}
+                      placeholder="KiyuMart"
+                      data-testid="input-platform-name"
+                    />
+                    {form.formState.errors.platformName && (
+                      <p className="text-sm text-destructive">
+                        {form.formState.errors.platformName.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="isMultiVendor">Multi-Vendor Mode</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Enable multiple sellers to list products on your platform
+                      </p>
+                    </div>
+                    <Switch
+                      id="isMultiVendor"
+                      checked={form.watch("isMultiVendor")}
+                      onCheckedChange={(checked) => form.setValue("isMultiVendor", checked)}
+                      data-testid="switch-multi-vendor"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="allowSellerRegistration">Allow Seller Registration</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Show "Become a Seller" button on toolbar to allow new seller applications
+                      </p>
+                    </div>
+                    <Switch
+                      id="allowSellerRegistration"
+                      checked={form.watch("allowSellerRegistration")}
+                      onCheckedChange={(checked) => form.setValue("allowSellerRegistration", checked)}
+                      data-testid="switch-allow-seller-registration"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="allowRiderRegistration">Allow Delivery Partner Registration</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Show "Become a Delivery Partner" button on toolbar to allow new delivery partner applications
+                      </p>
+                    </div>
+                    <Switch
+                      id="allowRiderRegistration"
+                      checked={form.watch("allowRiderRegistration")}
+                      onCheckedChange={(checked) => form.setValue("allowRiderRegistration", checked)}
+                      data-testid="switch-allow-rider-registration"
+                    />
+                  </div>
+
+                  {form.watch("isMultiVendor") && (
+                    <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
+                      <div className="space-y-2">
+                        <Label>Multi-Vendor Features</Label>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Manage marketplace banners, collections, and homepage layout
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => navigate("/admin/banners")}
+                          data-testid="button-banner-manager"
+                        >
+                          <ImageIcon className="w-4 h-4 mr-2" />
+                          Manage Banners
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-2 pt-2 border-t">
+                        <Label htmlFor="shopDisplayMode">Homepage Display Mode</Label>
+                        <Select
+                          value={form.watch("shopDisplayMode")}
+                          onValueChange={(value) => form.setValue("shopDisplayMode", value as "by-store" | "by-category")}
+                        >
+                          <SelectTrigger id="shopDisplayMode" data-testid="select-shop-display-mode">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="by-store">Shop by Store</SelectItem>
+                            <SelectItem value="by-category">Shop by Categories</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Choose how products are displayed on the multi-vendor homepage
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {!form.watch("isMultiVendor") && (
+                    <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="primaryStoreId">Primary Store (Single-Store Mode)</Label>
+                        <Select
+                          value={form.watch("primaryStoreId") || "none"}
+                          onValueChange={(value) => form.setValue("primaryStoreId", value === "none" ? null : value)}
+                        >
+                          <SelectTrigger id="primaryStoreId" data-testid="select-primary-store">
+                            <SelectValue placeholder="Select a store" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">No primary store</SelectItem>
+                            {stores.filter(s => s.isActive).map((store) => (
+                              <SelectItem key={store.id} value={store.id}>
+                                {store.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Select the store to display in single-store mode. Only one store can be primary. Leave empty to show the first active store.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="payments" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Paystack Integration</CardTitle>
+                  <CardDescription>
+                    Configure your Paystack payment gateway credentials
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="paystackPublicKey">Paystack Public Key</Label>
+                    <Input
+                      id="paystackPublicKey"
+                      {...form.register("paystackPublicKey")}
+                      placeholder="pk_test_xxxxxxxxxxxxxxxx"
+                      data-testid="input-paystack-public"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Your Paystack public key (starts with pk_test_ or pk_live_)
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="paystackSecretKey">Paystack Secret Key</Label>
+                    <Input
+                      id="paystackSecretKey"
+                      type="password"
+                      {...form.register("paystackSecretKey")}
+                      placeholder="sk_test_xxxxxxxxxxxxxxxx"
+                      data-testid="input-paystack-secret"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Your Paystack secret key (starts with sk_test_ or sk_live_)
+                    </p>
+                    {form.formState.errors.paystackSecretKey && (
+                      <p className="text-sm text-destructive">
+                        {form.formState.errors.paystackSecretKey.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="processingFeePercent">Processing Fee (%)</Label>
+                    <Input
+                      id="processingFeePercent"
+                      type="number"
+                      step="0.01"
+                      {...form.register("processingFeePercent")}
+                      placeholder="1.95"
+                      data-testid="input-processing-fee"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Percentage fee charged per transaction
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="defaultCommissionRate">Default Commission Rate (%)</Label>
+                    <Input
+                      id="defaultCommissionRate"
+                      type="number"
+                      step="0.01"
+                      {...form.register("defaultCommissionRate")}
+                      placeholder="10.00"
+                      data-testid="input-commission-rate"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Platform commission charged on each sale (used for multi-vendor payment splits)
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="minimumPayoutAmount">Minimum Payout Amount</Label>
+                    <Input
+                      id="minimumPayoutAmount"
+                      type="number"
+                      step="0.01"
+                      {...form.register("minimumPayoutAmount")}
+                      placeholder="50.00"
+                      data-testid="input-minimum-payout"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Minimum amount sellers must have before requesting a payout
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+            </TabsContent>
+
+            <TabsContent value="storage" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Cloudinary Storage</CardTitle>
+                  <CardDescription>
+                    Configure Cloudinary for media uploads and storage
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                    <div className="flex items-start gap-3">
+                      <ImageIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
+                          Cloudinary Configuration
+                        </h4>
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                          For security reasons, Cloudinary API credentials must be configured using environment variables (Replit Secrets), not stored in the database.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cloudinaryCloudName">Cloud Name</Label>
+                    <Input
+                      id="cloudinaryCloudName"
+                      {...form.register("cloudinaryCloudName")}
+                      placeholder="your-cloud-name"
+                      data-testid="input-cloudinary-cloud-name"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Your Cloudinary cloud name (found in your Cloudinary dashboard)
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cloudinaryApiKey">API Key</Label>
+                    <Input
+                      id="cloudinaryApiKey"
+                      {...form.register("cloudinaryApiKey")}
+                      placeholder="123456789012345"
+                      data-testid="input-cloudinary-api-key"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Your Cloudinary API key
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cloudinaryApiSecret">API Secret</Label>
+                    <Input
+                      id="cloudinaryApiSecret"
+                      type="password"
+                      {...form.register("cloudinaryApiSecret")}
+                      placeholder="••••••••••••••••••••••••"
+                      data-testid="input-cloudinary-api-secret"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Your Cloudinary API secret (keep this confidential)
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="contact" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Contact Information</CardTitle>
+                  <CardDescription>
+                    Update your platform's contact details displayed in the footer
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="contactPhone">Contact Phone</Label>
+                    <Input
+                      id="contactPhone"
+                      {...form.register("contactPhone")}
+                      placeholder="+233 XX XXX XXXX"
+                      data-testid="input-contact-phone"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="contactEmail">Contact Email</Label>
+                    <Input
+                      id="contactEmail"
+                      type="email"
+                      {...form.register("contactEmail")}
+                      placeholder="support@kiyumart.com"
+                      data-testid="input-contact-email"
+                    />
+                    {form.formState.errors.contactEmail && (
+                      <p className="text-sm text-destructive">
+                        {form.formState.errors.contactEmail.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="contactAddress">Contact Address</Label>
+                    <Input
+                      id="contactAddress"
+                      {...form.register("contactAddress")}
+                      placeholder="Accra, Ghana"
+                      data-testid="input-contact-address"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="footerDescription">Footer Description</Label>
+                    <Textarea
+                      id="footerDescription"
+                      {...form.register("footerDescription")}
+                      placeholder="Your trusted fashion marketplace..."
+                      rows={3}
+                      data-testid="input-footer-description"
+                    />
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <h4 className="font-semibold mb-4">Social Media Links</h4>
+                    
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="facebookUrl">Facebook URL</Label>
+                        <Input
+                          id="facebookUrl"
+                          {...form.register("facebookUrl")}
+                          placeholder="https://facebook.com/yourpage"
+                          data-testid="input-facebook-url"
+                        />
+                        {form.formState.errors.facebookUrl && (
+                          <p className="text-sm text-destructive">
+                            {form.formState.errors.facebookUrl.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="instagramUrl">Instagram URL</Label>
+                        <Input
+                          id="instagramUrl"
+                          {...form.register("instagramUrl")}
+                          placeholder="https://instagram.com/yourpage"
+                          data-testid="input-instagram-url"
+                        />
+                        {form.formState.errors.instagramUrl && (
+                          <p className="text-sm text-destructive">
+                            {form.formState.errors.instagramUrl.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="twitterUrl">Twitter URL</Label>
+                        <Input
+                          id="twitterUrl"
+                          {...form.register("twitterUrl")}
+                          placeholder="https://twitter.com/yourpage"
+                          data-testid="input-twitter-url"
+                        />
+                        {form.formState.errors.twitterUrl && (
+                          <p className="text-sm text-destructive">
+                            {form.formState.errors.twitterUrl.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="branding" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Branding & Appearance</CardTitle>
+                  <CardDescription>
+                    Customize your platform's visual identity
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="primaryColor">Primary Color</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="primaryColor"
+                        {...form.register("primaryColor")}
+                        placeholder="#1e7b5f"
+                        data-testid="input-primary-color"
+                        className="flex-1"
+                      />
+                      <div 
+                        className="w-12 h-10 rounded border"
+                        style={{ backgroundColor: form.watch("primaryColor") }}
+                      />
+                    </div>
+                    {form.formState.errors.primaryColor && (
+                      <p className="text-sm text-destructive">
+                        {form.formState.errors.primaryColor.message}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Hex color code for your brand's primary color
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="currency" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Currency Settings</CardTitle>
+                  <CardDescription>
+                    Configure your platform's default currency
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="defaultCurrency">Default Currency</Label>
+                    <Select
+                      value={form.watch("defaultCurrency")}
+                      onValueChange={(value) => form.setValue("defaultCurrency", value)}
+                    >
+                      <SelectTrigger data-testid="select-default-currency">
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="GHS">GHS - Ghanaian Cedi</SelectItem>
+                        <SelectItem value="NGN">NGN - Nigerian Naira</SelectItem>
+                        <SelectItem value="XOF">XOF - West African CFA Franc</SelectItem>
+                        <SelectItem value="USD">USD - US Dollar</SelectItem>
+                        <SelectItem value="EUR">EUR - Euro</SelectItem>
+                        <SelectItem value="SAR">SAR - Saudi Riyal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="ads" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Advertisement Settings</CardTitle>
+                  <CardDescription>
+                    Control advertisement display and manage ad placements to monetize your platform
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                    <div className="space-y-1">
+                      <Label htmlFor="adsEnabled" className="text-base font-semibold">Enable Advertisements</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Display ads across your platform to generate revenue
+                      </p>
+                    </div>
+                    <Switch
+                      id="adsEnabled"
+                      checked={form.watch("adsEnabled")}
+                      onCheckedChange={(checked) => form.setValue("adsEnabled", checked)}
+                      data-testid="switch-ads-enabled"
+                    />
+                  </div>
+
+                  {form.watch("adsEnabled") && (
+                    <div className="space-y-6 pt-4">
+                      <div className="space-y-4 p-4 border rounded-lg">
+                        <h4 className="font-semibold flex items-center gap-2">
+                          <ImageIcon className="h-4 w-4" />
+                          Hero Banner Ad
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Display an advertisement banner prominently on the homepage hero section
+                        </p>
+                        <div className="space-y-2">
+                          <Label htmlFor="heroBannerAdImage">Image URL</Label>
+                          <Input
+                            id="heroBannerAdImage"
+                            {...form.register("heroBannerAdImage")}
+                            placeholder="https://example.com/ad-banner.jpg"
+                            data-testid="input-hero-ad-image"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Recommended size: 1200x400px
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="heroBannerAdUrl">Link URL (Optional)</Label>
+                          <Input
+                            id="heroBannerAdUrl"
+                            {...form.register("heroBannerAdUrl")}
+                            placeholder="https://example.com"
+                            data-testid="input-hero-ad-url"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 p-4 border rounded-lg">
+                        <h4 className="font-semibold flex items-center gap-2">
+                          <ImageIcon className="h-4 w-4" />
+                          Sidebar Ad
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Display an advertisement in the sidebar on product listing pages
+                        </p>
+                        <div className="space-y-2">
+                          <Label htmlFor="sidebarAdImage">Image URL</Label>
+                          <Input
+                            id="sidebarAdImage"
+                            {...form.register("sidebarAdImage")}
+                            placeholder="https://example.com/sidebar-ad.jpg"
+                            data-testid="input-sidebar-ad-image"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Recommended size: 300x600px
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="sidebarAdUrl">Link URL (Optional)</Label>
+                          <Input
+                            id="sidebarAdUrl"
+                            {...form.register("sidebarAdUrl")}
+                            placeholder="https://example.com"
+                            data-testid="input-sidebar-ad-url"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 p-4 border rounded-lg">
+                        <h4 className="font-semibold flex items-center gap-2">
+                          <ImageIcon className="h-4 w-4" />
+                          Product Page Ad
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Display an advertisement below product details on individual product pages
+                        </p>
+                        <div className="space-y-2">
+                          <Label htmlFor="productPageAdImage">Image URL</Label>
+                          <Input
+                            id="productPageAdImage"
+                            {...form.register("productPageAdImage")}
+                            placeholder="https://example.com/product-ad.jpg"
+                            data-testid="input-product-ad-image"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Recommended size: 728x90px
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="productPageAdUrl">Link URL (Optional)</Label>
+                          <Input
+                            id="productPageAdUrl"
+                            {...form.register("productPageAdUrl")}
+                            placeholder="https://example.com"
+                            data-testid="input-product-ad-url"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 p-4 border rounded-lg">
+                        <h4 className="font-semibold flex items-center gap-2">
+                          <ImageIcon className="h-4 w-4" />
+                          Footer Ad
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Display an advertisement in the footer section across all pages
+                        </p>
+                        <div className="space-y-2">
+                          <Label htmlFor="footerAdImage">Image URL</Label>
+                          <Input
+                            id="footerAdImage"
+                            {...form.register("footerAdImage")}
+                            placeholder="https://example.com/footer-ad.jpg"
+                            data-testid="input-footer-ad-image"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Recommended size: 1200x150px
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="footerAdUrl">Link URL (Optional)</Label>
+                          <Input
+                            id="footerAdUrl"
+                            {...form.register("footerAdUrl")}
+                            placeholder="https://example.com"
+                            data-testid="input-footer-ad-url"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-end gap-4 mt-6">
+            <Button
+              type="submit"
+              disabled={updateSettingsMutation.isPending}
+              data-testid="button-save-settings"
+            >
+              {updateSettingsMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Settings
+                </>
+              )}
+            </Button>
+          </div>
+          </form>
+        </div>
+    </DashboardLayout>
+  );
+}

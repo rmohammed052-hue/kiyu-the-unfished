@@ -1,0 +1,186 @@
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Heart, Star } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+interface ProductCardProps {
+  id: string;
+  name: string;
+  price: number | string;
+  costPrice?: number | string;
+  currency?: string;
+  image: string;
+  discount?: number;
+  rating?: number | string;
+  reviewCount?: number;
+  inStock?: boolean;
+  isWishlisted?: boolean;
+  onToggleWishlist?: (id: string) => void;
+}
+
+/**
+ * ⚠️ CRITICAL - MANDATORY LAYOUT - DO NOT CHANGE WITHOUT EXPLICIT USER APPROVAL ⚠️
+ * 
+ * This product card layout is STRICTLY DEFINED and must remain exactly as designed below.
+ * Any AI builder or developer modifying this component MUST preserve this exact structure.
+ * 
+ * REQUIRED LAYOUT (top to bottom):
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * 1. Product Image (aspect-[4/3] - horizontal ratio to reduce vertical height)
+ *    - Discount badge (top-left corner, red background)
+ *    - Wishlist heart button (top-right corner)
+ * 
+ * 2. Product Name (text-base, font-semibold, line-clamp-2, leading-tight)
+ * 
+ * 3. Rating Row (Star icon + number + review count)
+ *    - Format: ★ 4.8 (124)
+ *    - Star: h-4 w-4, filled with primary color
+ *    - Rating number: text-sm font-medium
+ *    - Review count: text-sm text-muted-foreground
+ * 
+ * 4. Price Section (strikethrough original + sale price)
+ *    - Original price: text-sm, line-through, gray (only if discounted)
+ *    - Sale price: text-xl, font-bold, primary color (green)
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * 
+ * SPACING & PADDING:
+ * - Card content padding: p-2.5
+ * - Vertical spacing between elements: space-y-1
+ * 
+ * ⛔ DO NOT:
+ * - Reorder elements
+ * - Change text sizes without approval
+ * - Modify spacing or padding
+ * - Remove or alter the image aspect ratio
+ * - Change the discount badge or wishlist button positions
+ * 
+ * This layout ensures consistency across the entire marketplace.
+ * All modifications MUST be approved by the product owner.
+ */
+export default function ProductCard({
+  id,
+  name,
+  price,
+  costPrice,
+  currency = "GHS",
+  image,
+  discount = 0,
+  rating = 0,
+  reviewCount = 0,
+  inStock = true,
+  isWishlisted: initialWishlisted = false,
+  onToggleWishlist,
+}: ProductCardProps) {
+  const [, navigate] = useLocation();
+  const [isWishlisted, setIsWishlisted] = useState(initialWishlisted);
+  const { formatPrice } = useLanguage();
+
+  useEffect(() => {
+    setIsWishlisted(initialWishlisted);
+  }, [initialWishlisted]);
+
+  const sellingPrice = typeof price === 'string' ? parseFloat(price) : price;
+  const originalPrice = costPrice ? (typeof costPrice === 'string' ? parseFloat(costPrice) : costPrice) : null;
+  const ratingNum = typeof rating === 'string' ? parseFloat(rating) : rating;
+  
+  const actualDiscount = originalPrice && originalPrice > sellingPrice 
+    ? Math.round(((originalPrice - sellingPrice) / originalPrice) * 100)
+    : 0;
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsWishlisted(!isWishlisted);
+    onToggleWishlist?.(id);
+  };
+
+  const handleCardClick = () => {
+    navigate(`/product/${id}`);
+  };
+
+  return (
+    <Card 
+      className="group overflow-hidden hover-elevate transition-all duration-300 cursor-pointer"
+      onClick={handleCardClick}
+      data-testid={`card-product-${id}`}
+    >
+      {/* Product Image Container - DO NOT MODIFY ASPECT RATIO */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+        <img
+          src={image}
+          alt={name}
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          data-testid={`img-product-${id}`}
+        />
+        {actualDiscount > 0 && (
+          <Badge 
+            className="absolute top-2 left-2 bg-red-600 text-white z-10 font-bold text-xs px-2 py-1 shadow-md"
+            data-testid={`badge-discount-${id}`}
+          >
+            {actualDiscount}% OFF
+          </Badge>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`absolute top-2 right-2 bg-background/80 backdrop-blur-sm hover:bg-background ${
+            isWishlisted ? "text-destructive" : ""
+          }`}
+          onClick={handleWishlistToggle}
+          data-testid={`button-wishlist-${id}`}
+        >
+          <Heart className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`} />
+        </Button>
+        {!inStock && (
+          <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+            <Badge variant="secondary" data-testid={`badge-out-of-stock-${id}`}>
+              Out of Stock
+            </Badge>
+          </div>
+        )}
+      </div>
+
+      {/* Product Info Section - DO NOT REORDER ELEMENTS */}
+      <div className="p-2.5 space-y-1">
+        {/* Product Name */}
+        <h3 
+          className="font-semibold text-base line-clamp-2 leading-tight"
+          data-testid={`text-product-name-${id}`}
+        >
+          {name}
+        </h3>
+
+        {/* Rating Row - Star Icon + Number + (Review Count) */}
+        <div className="flex items-center gap-1">
+          <Star className="h-4 w-4 fill-primary text-primary" />
+          <span className="text-sm font-medium" data-testid={`text-rating-${id}`}>
+            {ratingNum.toFixed(1)}
+          </span>
+          <span className="text-sm text-muted-foreground" data-testid={`text-reviews-${id}`}>
+            ({reviewCount})
+          </span>
+        </div>
+
+        {/* Price Row - Original Price (struck) + Sale Price (green) */}
+        <div className="flex items-baseline gap-2">
+          {originalPrice && originalPrice > sellingPrice && (
+            <span 
+              className="text-sm text-gray-500 dark:text-gray-400 line-through"
+              data-testid={`text-cost-price-${id}`}
+            >
+              {formatPrice(originalPrice)}
+            </span>
+          )}
+          <span 
+            className="text-xl font-bold text-primary"
+            data-testid={`text-selling-price-${id}`}
+          >
+            {formatPrice(sellingPrice)}
+          </span>
+        </div>
+      </div>
+    </Card>
+  );
+}
