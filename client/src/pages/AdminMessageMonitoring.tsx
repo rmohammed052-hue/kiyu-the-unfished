@@ -21,22 +21,23 @@ interface MessageStats {
 }
 
 interface Conversation {
-  userId: string;
+  userId: number;
   userName: string;
   userRole: string;
   lastMessage: string;
   lastMessageTime: string;
   unreadCount: number;
-  messageCount: number;
-  status: 'sent' | 'delivered' | 'read';
+  totalMessages: number;
+  messageStatus: 'sent' | 'delivered' | 'read';
+  conversationId: string;
 }
 
 interface RecentMessage {
-  id: string;
-  senderId: string;
+  id: number;
   senderName: string;
-  receiverId: string;
+  senderRole: string;
   receiverName: string;
+  receiverRole: string;
   message: string;
   status: 'sent' | 'delivered' | 'read';
   createdAt: string;
@@ -289,7 +290,7 @@ export default function AdminMessageMonitoring() {
                       </div>
                     ) : (
                       filteredConversations.map((conv) => (
-                        <Card key={conv.userId} className="p-4 hover:bg-accent transition-colors">
+                        <Card key={conv.conversationId} className="p-4 hover:bg-accent transition-colors">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
@@ -297,8 +298,8 @@ export default function AdminMessageMonitoring() {
                                 <Badge variant="outline" className="text-xs">
                                   {conv.userRole}
                                 </Badge>
-                                <Badge className={getStatusColor(conv.status)}>
-                                  {conv.status}
+                                <Badge className={getStatusColor(conv.messageStatus)}>
+                                  {conv.messageStatus}
                                 </Badge>
                               </div>
                               <p className="text-sm text-muted-foreground line-clamp-1">
@@ -311,7 +312,7 @@ export default function AdminMessageMonitoring() {
                                   })}
                                 </span>
                                 <span className="text-xs">
-                                  {conv.messageCount} messages
+                                  {conv.totalMessages} messages
                                 </span>
                                 {conv.unreadCount > 0 && (
                                   <Badge variant="destructive" className="text-xs">
