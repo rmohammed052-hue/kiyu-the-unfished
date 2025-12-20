@@ -295,7 +295,7 @@ export default function AdminOrders() {
   };
 
   // Apply payment filter first, then search filter
-  const paymentFilteredOrders = filterOrdersByPaymentStatus(orders, paymentFilter);
+  const paymentFilteredOrders = filterOrdersByPaymentStatus(orders as any, paymentFilter);
   
   const filteredOrders = paymentFilteredOrders.filter(o => 
     o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -382,11 +382,11 @@ export default function AdminOrders() {
                         </span>
                         <OrderStatusBadge 
                           status={order.status} 
-                          paymentStatus={order.paymentStatus}
+                          paymentStatus={order.paymentStatus || "pending"}
                           showPaymentStatus={true}
                         />
                         <span className="text-sm text-muted-foreground" data-testid={`text-date-${order.id}`}>
-                          {new Date(order.createdAt).toLocaleDateString()}
+                          {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
                         </span>
                         <Badge variant="outline" data-testid={`badge-delivery-${order.id}`}>
                           {order.deliveryMethod}

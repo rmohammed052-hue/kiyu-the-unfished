@@ -36,7 +36,7 @@ export default function SellerOrders() {
   });
 
   // Apply payment filter first, then search filter
-  const paymentFilteredOrders = filterOrdersByPaymentStatus(orders, paymentFilter);
+  const paymentFilteredOrders = filterOrdersByPaymentStatus(orders as any, paymentFilter);
   
   const filteredOrders = paymentFilteredOrders.filter(order =>
     order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase())
@@ -133,12 +133,12 @@ export default function SellerOrders() {
                       <div>
                         <p className="font-semibold text-lg">#{order.orderNumber}</p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(order.createdAt).toLocaleDateString()}
+                          {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
                         </p>
                       </div>
                       <OrderStatusBadge 
                         status={order.status} 
-                        paymentStatus={order.paymentStatus}
+                        paymentStatus={order.paymentStatus || "pending"}
                         showPaymentStatus={true}
                       />
                     </div>

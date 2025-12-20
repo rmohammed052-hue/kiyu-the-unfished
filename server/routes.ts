@@ -6,7 +6,7 @@ import crypto from "crypto";
 import { storage } from "./storage";
 import { db } from "../db";
 import { users, cart, wishlist, chatMessages, notifications, orders, products, stores } from "@shared/schema";
-import { eq, or, isNotNull, and, desc } from "drizzle-orm";
+import { eq, or, isNotNull, and, desc, inArray } from "drizzle-orm";
 import { 
   hashPassword, 
   comparePassword, 
@@ -2822,7 +2822,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/orders/:id/assign-rider", requireAuth, requireRole("admin", "seller"), async (req, res) => {
+  app.patch("/api/orders/:id/assign-rider", requireAuth, requireRole("admin", "seller"), async (req: AuthRequest, res) => {
     try {
       const { riderId } = req.body;
       const order = await storage.assignRider(req.params.id, riderId);
@@ -2843,7 +2843,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           orderId: order.id, 
           orderNumber: order.orderNumber,
           assignedBy: req.user!.role,
-          pickupAddress: order.sellerAddress || 'N/A',
+          pickupAddress: (order as any).sellerAddress || 'N/A',
           deliveryAddress: order.deliveryAddress
         } as any
       });
@@ -2852,9 +2852,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       io.to(riderId).emit('new_order_assigned', {
         orderId: order.id,
         orderNumber: order.orderNumber,
-        pickupAddress: order.sellerAddress || 'N/A',
+        pickupAddress: (order as any).sellerAddress || 'N/A',
         deliveryAddress: order.deliveryAddress,
-        buyerName: order.buyerName,
+        buyerName: (order as any).buyerName || 'Customer',
         deliveryMethod: order.deliveryMethod,
         total: order.total,
         currency: order.currency,
@@ -2884,6 +2884,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const availableRiders = await storage.getAvailableRidersWithOrderCounts();
       res.json(availableRiders);
     } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // ============ Rider Self-Service Routes ============
+  // Get rider's own earnings (for rider dashboard)
+  app.get("/api/rider/earnings", requireAuth, requireRole("rider"), async (req: AuthRequest, res) => {
+    try {
+      const riderId = req.user!.id;
+      
+      const deliveries = await db.query.orders.findMany({
+        where: and(
+          eq(orders.riderId, riderId),
+          eq(orders.status, "delivered")
+        ),
+      });
+      
+      const totalDeliveries = deliveries.length;
+      const total = deliveries.reduce((sum, order) => {
+        return sum + parseFloat(order.deliveryFee || "0");
+      }, 0);
+      
+      const now = new Date();
+      const thisMonthDeliveries = deliveries.filter(order => {
+        const deliveredDate = order.deliveredAt ? new Date(order.deliveredAt) : null;
+        if (!deliveredDate) return false;
+        return deliveredDate.getMonth() === now.getMonth() && 
+               deliveredDate.getFullYear() === now.getFullYear();
+      });
+      
+      const thisMonth = thisMonthDeliveries.reduce((sum, order) => 
+        sum + parseFloat(order.deliveryFee || "0"), 0);
+      
+      res.json({
+        total: total.toFixed(2),
+        thisMonth: thisMonth.toFixed(2),
+        deliveriesCompleted: totalDeliveries,
+        deliveriesThisMonth: thisMonthDeliveries.length,
+      });
+    } catch (error: any) {
+      console.error("Error fetching rider earnings:", error);
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Get rider's active delivery (for tracking)
+  app.get("/api/deliveries/active", requireAuth, requireRole("rider"), async (req: AuthRequest, res) => {
+    try {
+      const riderId = req.user!.id;
+      
+      // Find order assigned to this rider that's currently being delivered
+      const activeOrder = await db.query.orders.findFirst({
+        where: and(
+          eq(orders.riderId, riderId),
+          inArray(orders.status, ["processing", "delivering"])
+        ),
+        orderBy: [desc(orders.updatedAt)],
+      });
+      
+      if (!activeOrder) {
+        return res.status(404).json({ message: "No active delivery found" });
+      }
+      
+      // Get destination from delivery address
+      res.json({
+        id: activeOrder.id.toString(),
+        orderNumber: activeOrder.orderNumber,
+        status: activeOrder.status,
+        currentLocation: "Current Location",
+        destination: activeOrder.deliveryAddress || "Delivery Address",
+        distance: "Calculating...",
+        estimatedTime: "Calculating...",
+      });
+    } catch (error: any) {
+      console.error("Error fetching active delivery:", error);
       res.status(400).json({ error: error.message });
     }
   });
@@ -5042,6 +5117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Store location in database if orderId is provided
         if (orderId) {
           await storage.createDeliveryTracking({
+            riderId: riderId.toString(),
             orderId: orderId.toString(),
             latitude: position.latitude.toString(),
             longitude: position.longitude.toString(),
@@ -5064,8 +5140,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Also notify the customer tracking this order
           const order = await storage.getOrder(orderId);
-          if (order?.userId) {
-            io.to(order.userId.toString()).emit("rider_location_updated", {
+          if (order?.buyerId) {
+            io.to(order.buyerId.toString()).emit("rider_location_updated", {
               orderId,
               latitude: position.latitude,
               longitude: position.longitude,
