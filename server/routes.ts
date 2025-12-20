@@ -21,6 +21,9 @@ import multer from "multer";
 import sharp from "sharp";
 import { insertUserSchema, insertProductSchema, insertDeliveryZoneSchema, insertOrderSchema, insertWishlistSchema, insertReviewSchema, insertRiderReviewSchema, insertBannerCollectionSchema, insertMarketplaceBannerSchema, insertFooterPageSchema, vehicleInfoSchema, type User } from "@shared/schema";
 import { getStoreTypeSchema, type StoreType, STORE_TYPES } from "@shared/storeTypes";
+import { validatePassword } from "./utils/passwordSecurity";
+import { sanitizeEmail, sanitizePlainText, sanitizeObject } from "./utils/sanitization";
+import { authLogger, apiLogger } from "./utils/logger";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -85,10 +88,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/signup", async (req, res) => {
     try {
       const validatedData = insertUserSchema.parse(req.body);
+      
+      // Sanitize email
+      const sanitizedEmail = sanitizeEmail(validatedData.email);
+      validatedData.email = sanitizedEmail;
+      
       const existingUser = await storage.getUserByEmail(validatedData.email);
       
       if (existingUser) {
         return res.status(400).json({ error: "Email already exists" });
+      }
+
+      // Validate password strength
+      const passwordValidation = validatePassword(validatedData.password);
+      if (!passwordValidation.success) {
+        return res.status(400).json({ 
+          error: "Password validation failed",
+          details: passwordValidation.errors
+        });
       }
 
       const requestedRole = validatedData.role || "buyer";
@@ -200,18 +217,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Current and new passwords are required" });
       }
 
-      // Server-side password validation
-      if (newPassword.length < 8) {
-        return res.status(400).json({ error: "Password must be at least 8 characters long" });
-      }
-      if (!/[A-Z]/.test(newPassword)) {
-        return res.status(400).json({ error: "Password must contain at least one uppercase letter" });
-      }
-      if (!/[a-z]/.test(newPassword)) {
-        return res.status(400).json({ error: "Password must contain at least one lowercase letter" });
-      }
-      if (!/[0-9]/.test(newPassword)) {
-        return res.status(400).json({ error: "Password must contain at least one number" });
+      // Validate new password strength
+      const passwordValidation = validatePassword(newPassword);
+      if (!passwordValidation.success) {
+        return res.status(400).json({ 
+          error: "Password validation failed",
+          details: passwordValidation.errors
+        });
       }
 
       const user = await storage.getUser(req.user!.id);
@@ -749,7 +761,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
         
-        userData.vehicleInfo = parsedVehicle.data;
+        userData.vehicleInfo = parsedVehicle.data as { type: string; plateNumber?: string; license?: string; color?: string };
       }
 
       // Handle seller-specific fields - ENFORCE storeType requirement
@@ -979,8 +991,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { password, ...userData } = req.body;
       
-      if (!password || password.length < 8) {
-        return res.status(400).json({ error: "Password must be at least 8 characters" });
+      // Validate password strength
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.success) {
+        return res.status(400).json({ 
+          error: "Password validation failed",
+          details: passwordValidation.errors
+        });
       }
 
       if (!userData.storeType) {
@@ -1036,8 +1053,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { password, ...rawUserData } = req.body;
       
-      if (!password || password.length < 8) {
-        return res.status(400).json({ error: "Password must be at least 8 characters" });
+      // Validate password strength
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.success) {
+        return res.status(400).json({ 
+          error: "Password validation failed",
+          details: passwordValidation.errors
+        });
       }
 
       const existingUser = await storage.getUserByEmail(rawUserData.email);

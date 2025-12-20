@@ -206,7 +206,12 @@ export class DbStorage implements IStorage {
   }
 
   async createUser(user: InsertUser): Promise<User> {
-    const result = await db.insert(users).values([user]).returning();
+    // Type-safe insertion by ensuring vehicleInfo is properly typed
+    const userData = { ...user };
+    if (userData.vehicleInfo) {
+      userData.vehicleInfo = userData.vehicleInfo as { type: string; plateNumber?: string; license?: string; color?: string };
+    }
+    const result = await db.insert(users).values(userData as any).returning();
     return result[0];
   }
 
@@ -1178,8 +1183,9 @@ export class DbStorage implements IStorage {
 
   async removeFromWishlist(userId: string, productId: string): Promise<boolean> {
     const result = await db.delete(wishlist)
-      .where(and(eq(wishlist.userId, userId), eq(wishlist.productId, productId)));
-    return result.rowCount !== null && result.rowCount > 0;
+      .where(and(eq(wishlist.userId, userId), eq(wishlist.productId, productId)))
+      .returning();
+    return result.length > 0;
   }
 
   // Review operations
@@ -1379,8 +1385,8 @@ export class DbStorage implements IStorage {
   }
 
   async deleteCoupon(id: string): Promise<boolean> {
-    const result = await db.delete(coupons).where(eq(coupons.id, id));
-    return result.rowCount ? result.rowCount > 0 : false;
+    const result = await db.delete(coupons).where(eq(coupons.id, id)).returning();
+    return result.length > 0;
   }
 
   async validateCoupon(code: string, sellerId: string, orderTotal: number): Promise<{ valid: boolean; message?: string; coupon?: Coupon; discountAmount?: string }> {
@@ -1627,8 +1633,8 @@ export class DbStorage implements IStorage {
   }
 
   async deleteCategoryField(id: string): Promise<boolean> {
-    const result = await db.delete(categoryFields).where(eq(categoryFields.id, id));
-    return result.rowCount !== null && result.rowCount > 0;
+    const result = await db.delete(categoryFields).where(eq(categoryFields.id, id)).returning();
+    return result.length > 0;
   }
 
   // Store operations
@@ -1743,8 +1749,8 @@ export class DbStorage implements IStorage {
   }
 
   async deleteStore(id: string): Promise<boolean> {
-    const result = await db.delete(stores).where(eq(stores.id, id));
-    return result.rowCount !== null && result.rowCount > 0;
+    const result = await db.delete(stores).where(eq(stores.id, id)).returning();
+    return result.length > 0;
   }
 
   // Category operations
@@ -1782,8 +1788,8 @@ export class DbStorage implements IStorage {
   }
 
   async deleteCategory(id: string): Promise<boolean> {
-    const result = await db.delete(categories).where(eq(categories.id, id));
-    return result.rowCount !== null && result.rowCount > 0;
+    const result = await db.delete(categories).where(eq(categories.id, id)).returning();
+    return result.length > 0;
   }
 
   async getCategoriesByStore(storeId: string): Promise<Category[]> {
@@ -1841,8 +1847,8 @@ export class DbStorage implements IStorage {
   }
 
   async deleteMediaLibraryItem(id: string): Promise<boolean> {
-    const result = await db.delete(mediaLibrary).where(eq(mediaLibrary.id, id));
-    return result.rowCount !== null && result.rowCount > 0;
+    const result = await db.delete(mediaLibrary).where(eq(mediaLibrary.id, id)).returning();
+    return result.length > 0;
   }
 
   // Role Features operations

@@ -2,6 +2,9 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { type User } from "@shared/schema";
 import { Request, Response, NextFunction } from "express";
+import { validatePassword } from "./utils/passwordSecurity";
+import { sanitizeEmail, sanitizePlainText } from "./utils/sanitization";
+import { authLogger } from "./utils/logger";
 
 if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET environment variable is required for JWT authentication");

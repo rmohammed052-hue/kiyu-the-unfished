@@ -5,11 +5,18 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, TrendingUp, DollarSign, Package, ShoppingCart } from "lucide-react";
 
+interface AnalyticsStats {
+  totalRevenue: number;
+  totalOrders: number;
+  productsSold: number;
+  growthRate: number;
+}
+
 export default function SellerAnalytics() {
   const { user } = useAuth();
   const { formatPrice } = useLanguage();
 
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading } = useQuery<AnalyticsStats>({
     queryKey: ["/api/analytics"],
     enabled: !!user && user.role === "seller",
   });

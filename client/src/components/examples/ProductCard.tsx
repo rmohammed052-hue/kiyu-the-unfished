@@ -14,7 +14,6 @@ export default function ProductCardExample() {
         rating={4.5}
         reviewCount={128}
         inStock={true}
-        onAddToCart={(id) => console.log('Add to cart:', id)}
         onToggleWishlist={(id) => console.log('Toggle wishlist:', id)}
       />
     </div>

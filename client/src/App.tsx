@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/auth";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { useBranding } from "@/hooks/useBranding";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 import Home from "@/pages/HomeConnected";
 import ProductDetails from "@/pages/ProductDetails";
@@ -126,7 +127,6 @@ function Router() {
       <Route path="/admin/settings" component={AdminSettings} />
       <Route path="/admin/delivery-tracking" component={AdminDeliveryTracking} />
       <Route path="/admin/zones" component={AdminDeliveryZones} />
-      <Route path="/admin/delivery-zones" component={AdminDeliveryZones} />
       <Route path="/admin/banners" component={AdminBannerManager} />
       <Route path="/admin/categories" component={AdminCategoryManager} />
       <Route path="/admin/footer-pages" component={AdminFooterPagesManager} />
@@ -184,18 +184,20 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <AuthProvider>
-          <NotificationProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Router />
-            </TooltipProvider>
-          </NotificationProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <AuthProvider>
+            <NotificationProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Router />
+              </TooltipProvider>
+            </NotificationProvider>
+          </AuthProvider>
+        </LanguageProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

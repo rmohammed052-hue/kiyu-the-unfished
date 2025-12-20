@@ -7,6 +7,13 @@ import rateLimit from "express-rate-limit";
 import jwt from "jsonwebtoken";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { validateEnvironment } from "./utils/envValidator";
+import { logger, apiLogger } from "./utils/logger";
+import { csrfProtection } from "./middleware/csrf";
+import { healthCheckHandler, livenessProbe, readinessProbe } from "./utils/healthCheck";
+
+// Validate environment variables at startup
+validateEnvironment();
 
 const app = express();
 
@@ -90,6 +97,23 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+// Add CSRF protection middleware (before routes)
+app.use(csrfProtection({
+  cookieName: 'csrf-token',
+  headerName: 'X-CSRF-Token',
+  cookieOptions: {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  }
+}));
+
+// Health check endpoints (no auth required)
+app.get('/health', healthCheckHandler);
+app.get('/health/live', livenessProbe);
+app.get('/health/ready', readinessProbe);
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -114,6 +138,17 @@ app.use((req, res, next) => {
       }
 
       log(logLine);
+      
+      // Also log to structured logger
+      apiLogger.info('API Request', {
+        method: req.method,
+        path,
+        statusCode: res.statusCode,
+        duration,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+        userId: (req as any).user?.id
+      });
     }
   });
 
@@ -128,15 +163,14 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
     
-    // Log error details for debugging (in production, use proper logging service)
-    console.error('[ERROR]', {
-      timestamp: new Date().toISOString(),
+    // Log error with structured logger
+    logger.error('Request Error', err instanceof Error ? err : undefined, {
       method: req.method,
       path: req.path,
       status,
       message,
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-      user: (req as any).user?.id || 'anonymous'
+      userId: (req as any).user?.id || 'anonymous',
+      ip: req.ip
     });
 
     // Send appropriate error response
@@ -169,5 +203,10 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    logger.info('Server Started', {
+      port,
+      environment: process.env.NODE_ENV,
+      nodeVersion: process.version
+    });
   });
 })();
