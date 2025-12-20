@@ -48,20 +48,20 @@ setInterval(() => {
   const FIVE_MINUTES = 5 * 60 * 1000;
   
   // Clean expired verification tokens (1 hour TTL)
-  for (const [reference, data] of paymentVerificationTokens.entries()) {
+  Array.from(paymentVerificationTokens.entries()).forEach(([reference, data]) => {
     if (now - data.timestamp > ONE_HOUR) {
       paymentVerificationTokens.delete(reference);
       console.log(`🧹 Cleaned expired verification token: ${reference}`);
     }
-  }
+  });
   
   // Clean expired idempotency locks (5 minutes TTL)
-  for (const [reference, lock] of paymentIdempotencyLocks.entries()) {
+  Array.from(paymentIdempotencyLocks.entries()).forEach(([reference, lock]) => {
     if (now - lock.timestamp > FIVE_MINUTES) {
       paymentIdempotencyLocks.delete(reference);
       console.log(`🧹 Cleaned expired idempotency lock: ${reference}`);
     }
-  }
+  });
 }, 5 * 60 * 1000);
 
 export async function registerRoutes(app: Express): Promise<Server> {

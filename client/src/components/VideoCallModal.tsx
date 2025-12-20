@@ -170,7 +170,7 @@ export function VideoCallModal({
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full">
-                    {isConnecting ? (
+                    {callState === 'connecting' || callState === 'ringing' ? (
                       <>
                         <Loader2 className="h-16 w-16 text-white animate-spin mb-4" />
                         <p className="text-white text-lg">Connecting to {targetUserName}...</p>
