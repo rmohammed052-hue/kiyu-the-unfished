@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { io } from "socket.io-client";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,54 @@ interface Notification {
 export default function RiderNotifications() {
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // FIX #5: Listen for new order assignment notifications
+  useEffect(() => {
+    if (!user) return;
+
+    const socket = io({
+      auth: { userId: user.id }
+    });
+
+    socket.on('connect', () => {
+      console.log('🔔 Rider notifications socket connected');
+      socket.emit('register', user.id);
+    });
+
+    socket.on('new_order_assigned', (data: {
+      orderId: string;
+      orderNumber: string;
+      pickupAddress: string;
+      deliveryAddress: string;
+      buyerName: string;
+      deliveryMethod: string;
+      total: string;
+      currency: string;
+      assignedBy: string;
+      assignedAt: string;
+    }) => {
+      console.log('🚚 New order assigned:', data);
+      
+      toast({
+        title: "New Delivery Assignment!",
+        description: `Order #${data.orderNumber} has been assigned to you by ${data.assignedBy}. Total: ${data.currency} ${data.total}`,
+        duration: 10000,
+      });
+
+      // Refresh notifications list
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/deliveries"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+    });
+
+    socket.on('disconnect', () => {
+      console.log('🔔 Rider notifications socket disconnected');
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [user, toast]);
 
   const { data: notifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: ["/api/notifications", user?.id],

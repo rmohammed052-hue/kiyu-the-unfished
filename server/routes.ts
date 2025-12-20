@@ -2792,6 +2792,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!order) {
         return res.status(404).json({ error: "Order not found" });
       }
+      
+      // FIX #5: Add real-time socket notification for manual rider assignment
+      const rider = await storage.getUser(riderId);
+      
+      // Create persistent notification for offline riders
+      await storage.createNotification({
+        userId: riderId,
+        type: 'order',
+        title: 'New Delivery Assignment',
+        message: `Order #${order.orderNumber} has been manually assigned to you by ${req.user!.role === 'admin' ? 'Admin' : 'Seller'}`,
+        metadata: { 
+          orderId: order.id, 
+          orderNumber: order.orderNumber,
+          assignedBy: req.user!.role,
+          pickupAddress: order.sellerAddress || 'N/A',
+          deliveryAddress: order.deliveryAddress
+        } as any
+      });
+      
+      // Emit real-time socket event to rider (if online)
+      io.to(riderId).emit('new_order_assigned', {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        pickupAddress: order.sellerAddress || 'N/A',
+        deliveryAddress: order.deliveryAddress,
+        buyerName: order.buyerName,
+        deliveryMethod: order.deliveryMethod,
+        total: order.total,
+        currency: order.currency,
+        assignedBy: req.user!.role,
+        assignedAt: new Date().toISOString()
+      });
+      
+      // Emit confirmation back to assigner (admin/seller)
+      io.to(req.user!.id).emit('rider_assignment_confirmed', {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        riderName: rider?.name || 'Rider',
+        riderId: riderId,
+        assignedAt: new Date().toISOString()
+      });
+      
+      console.log(`✅ Order ${order.orderNumber} manually assigned to rider ${rider?.name} by ${req.user!.role}`);
+      
       res.json(order);
     } catch (error: any) {
       res.status(400).json({ error: error.message });

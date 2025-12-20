@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { io } from "socket.io-client";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -254,12 +255,53 @@ export default function AdminManualRiderAssignment() {
   const [, navigate] = useLocation();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { formatPrice } = useLanguage();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || (user?.role !== "admin" && user?.role !== "super_admin"))) {
       navigate("/auth");
     }
   }, [isAuthenticated, authLoading, user, navigate]);
+
+  // FIX #5: Listen for rider assignment confirmations via socket
+  useEffect(() => {
+    if (!user) return;
+
+    const socket = io({
+      auth: { userId: user.id }
+    });
+
+    socket.on('connect', () => {
+      console.log('🔌 Admin assignment socket connected');
+      socket.emit('register', user.id);
+    });
+
+    socket.on('rider_assignment_confirmed', (data: {
+      orderId: string;
+      orderNumber: string;
+      riderName: string;
+      riderId: string;
+      assignedAt: string;
+    }) => {
+      console.log('✅ Rider assignment confirmed:', data);
+      
+      toast({
+        title: "Rider Assigned Successfully",
+        description: `${data.riderName} has been assigned to Order #${data.orderNumber}`,
+      });
+
+      // Refresh orders list
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+    });
+
+    socket.on('disconnect', () => {
+      console.log('🔌 Admin assignment socket disconnected');
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [user, toast]);
 
   const { data: orders = [], isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
