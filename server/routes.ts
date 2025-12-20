@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { storage } from "./storage";
 import { db } from "../db";
 import { users, cart, wishlist, chatMessages, notifications, orders, products, stores } from "@shared/schema";
@@ -26,6 +27,42 @@ import { sanitizeEmail, sanitizePlainText, sanitizeObject } from "./utils/saniti
 import { authLogger, apiLogger } from "./utils/logger";
 
 const upload = multer({ storage: multer.memoryStorage() });
+
+// ============ FIX #2 & #3: Payment Security Stores ============
+// In-memory stores for payment verification tokens and idempotency locks
+// Note: In production, use Redis for distributed systems
+interface PaymentVerificationToken {
+  userId: string;
+  orderId: string;
+  token: string;
+  timestamp: number;
+}
+
+const paymentVerificationTokens = new Map<string, PaymentVerificationToken>();
+const paymentIdempotencyLocks = new Map<string, { locked: boolean; timestamp: number }>();
+
+// Cleanup expired tokens and locks every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  const ONE_HOUR = 60 * 60 * 1000;
+  const FIVE_MINUTES = 5 * 60 * 1000;
+  
+  // Clean expired verification tokens (1 hour TTL)
+  for (const [reference, data] of paymentVerificationTokens.entries()) {
+    if (now - data.timestamp > ONE_HOUR) {
+      paymentVerificationTokens.delete(reference);
+      console.log(`🧹 Cleaned expired verification token: ${reference}`);
+    }
+  }
+  
+  // Clean expired idempotency locks (5 minutes TTL)
+  for (const [reference, lock] of paymentIdempotencyLocks.entries()) {
+    if (now - lock.timestamp > FIVE_MINUTES) {
+      paymentIdempotencyLocks.delete(reference);
+      console.log(`🧹 Cleaned expired idempotency lock: ${reference}`);
+    }
+  }
+}, 5 * 60 * 1000);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -3567,9 +3604,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
         await Promise.all(updatePromises);
 
+        // FIX #2: Generate and store verification token for security
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        paymentVerificationTokens.set(data.data.reference, {
+          userId: req.user!.id,
+          orderId: orders[0].id,  // Primary order ID
+          token: verificationToken,
+          timestamp: Date.now()
+        });
+        
+        console.log(`🔐 Generated verification token for payment ${data.data.reference}`);
         console.log(`✅ Payment initialized for ${isMultiVendor ? `${orders.length} orders in session ${checkoutSessionId}` : `order ${orders[0].orderNumber}`}`);
 
-        res.json(data.data);
+        // Return authorization URL with verification token
+        res.json({
+          ...data.data,
+          // Note: Verification token sent to client for callback URL
+          verificationToken
+        });
       } catch (fetchError: any) {
         clearTimeout(timeout);
         
@@ -3597,10 +3649,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/payments/verify/:reference", requireAuth, async (req: AuthRequest, res) => {
     try {
       const { reference } = req.params;
+      const verificationToken = req.query.token as string | undefined;
       
       if (!reference) {
         return res.status(400).json({ error: "Payment reference is required", userMessage: "Invalid payment reference." });
       }
+      
+      // FIX #3: Implement idempotency lock to prevent race conditions
+      const existingLock = paymentIdempotencyLocks.get(reference);
+      if (existingLock && existingLock.locked) {
+        console.log(`⚠️ Payment verification already in progress: ${reference}`);
+        return res.status(409).json({ 
+          error: "Payment verification in progress",
+          userMessage: "This payment is currently being verified. Please wait a moment and check your order status."
+        });
+      }
+      
+      // Acquire lock
+      paymentIdempotencyLocks.set(reference, { locked: true, timestamp: Date.now() });
+      console.log(`🔒 Acquired idempotency lock for payment: ${reference}`);
+      
+      try {
+        // FIX #2: Validate verification token for security
+        const storedTokenData = paymentVerificationTokens.get(reference);
+        
+        // Skip token validation for webhook calls (no token parameter)
+        // But enforce for manual verification calls
+        if (verificationToken !== undefined) {
+          if (!storedTokenData) {
+            return res.status(403).json({ 
+              error: "Invalid or expired verification token",
+              userMessage: "This payment verification link has expired or is invalid. Please check your order status."
+            });
+          }
+          
+          if (storedTokenData.token !== verificationToken) {
+            console.error(`🚨 SECURITY: Token mismatch for payment ${reference}`);
+            authLogger.warn(`Payment verification token mismatch`, {
+              userId: req.user!.id,
+              reference,
+              expectedToken: storedTokenData.token.substring(0, 10) + '...',
+              receivedToken: verificationToken.substring(0, 10) + '...'
+            });
+            return res.status(403).json({ 
+              error: "Invalid verification token",
+              userMessage: "Security verification failed. Please contact support if you completed this payment."
+            });
+          }
+          
+          // Validate user ownership
+          if (storedTokenData.userId !== req.user!.id) {
+            console.error(`🚨 SECURITY: User mismatch for payment ${reference}`);
+            authLogger.warn(`Payment verification user mismatch`, {
+              tokenUserId: storedTokenData.userId,
+              requestUserId: req.user!.id,
+              reference
+            });
+            return res.status(403).json({ 
+              error: "Unauthorized",
+              userMessage: "You are not authorized to verify this payment."
+            });
+          }
+          
+          console.log(`✅ Verification token validated for payment: ${reference}`);
+          
+          // Delete token after single use (prevent replay attacks)
+          paymentVerificationTokens.delete(reference);
+          console.log(`🗑️ Deleted one-time verification token: ${reference}`);
+        }
       
       // Get platform settings for Paystack key
       const settings = await storage.getPlatformSettings();
@@ -3902,20 +4018,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         orderCount: orders.length,
         message: data.data.status === "success" ? "Payment verified successfully" : data.data.gateway_response || "Payment failed"
       });
-      } catch (fetchError: any) {
-        clearTimeout(timeout);
-        
-        if (fetchError.name === 'AbortError') {
-          return res.status(504).json({ 
-            error: "Payment verification timeout",
-            userMessage: "Payment verification is taking too long. Please check your order status or contact support."
-          });
-        }
-        
+    } catch (fetchError: any) {
+      clearTimeout(timeout);
+      
+      if (fetchError.name === 'AbortError') {
+        return res.status(504).json({ 
+          error: "Payment verification timeout",
+          userMessage: "Payment verification is taking too long. Please check your order status or contact support."
+        });
+      }
+      
+      throw fetchError;
+    } finally {
+      // Always release the idempotency lock
+      paymentIdempotencyLocks.delete(reference);
+      console.log(`🔓 Released idempotency lock for payment: ${reference}`);
+    }
         return res.status(502).json({ 
           error: "Failed to verify payment",
           userMessage: "Unable to reach payment gateway for verification. Please try again or contact support."
         });
+      } finally {
+        // FIX #3: Always release idempotency lock
+        paymentIdempotencyLocks.delete(reference);
+        console.log(`🔓 Released idempotency lock for payment: ${reference}`);
       }
     } catch (error: any) {
       console.error("Payment verification error:", error);

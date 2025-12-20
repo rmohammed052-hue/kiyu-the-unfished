@@ -29,8 +29,7 @@ export function VideoCallModal({
   const {
     localStream,
     remoteStream,
-    isConnected,
-    isConnecting,
+    callState,
     error,
     isMuted,
     isVideoOff,
@@ -80,10 +79,26 @@ export function VideoCallModal({
   };
 
   const getConnectionStatus = () => {
-    if (error) return { text: 'Error', color: 'bg-red-500' };
-    if (isConnected) return { text: 'Connected', color: 'bg-green-500' };
-    if (isConnecting) return { text: 'Connecting...', color: 'bg-yellow-500' };
-    return { text: 'Ready', color: 'bg-gray-500' };
+    switch (callState) {
+      case 'initiating':
+        return { text: 'Requesting permissions...', color: 'bg-yellow-500', icon: <Loader2 className="w-4 h-4 animate-spin" /> };
+      case 'ringing':
+        return { text: 'Calling...', color: 'bg-blue-500', icon: <Phone className="w-4 h-4 animate-pulse" /> };
+      case 'connecting':
+        return { text: 'Connecting...', color: 'bg-yellow-500', icon: <Loader2 className="w-4 h-4 animate-spin" /> };
+      case 'connected':
+        return { text: 'Connected', color: 'bg-green-500', icon: null };
+      case 'reconnecting':
+        return { text: 'Reconnecting...', color: 'bg-orange-500', icon: <Loader2 className="w-4 h-4 animate-spin" /> };
+      case 'disconnected':
+        return { text: 'Disconnected', color: 'bg-gray-500', icon: null };
+      case 'failed':
+        return { text: 'Connection Failed', color: 'bg-red-500', icon: null };
+      case 'error':
+        return { text: 'Error', color: 'bg-red-500', icon: null };
+      default:
+        return { text: 'Ready', color: 'bg-gray-500', icon: null };
+    }
   };
 
   const status = getConnectionStatus();
@@ -99,7 +114,8 @@ export function VideoCallModal({
               </DialogTitle>
               <p className="text-sm text-muted-foreground mt-1">
                 {callStarted ? (
-                  <Badge className={`${status.color} text-white`}>
+                  <Badge className={`${status.color} text-white flex items-center gap-1 w-fit`}>
+                    {status.icon}
                     {status.text}
                   </Badge>
                 ) : (

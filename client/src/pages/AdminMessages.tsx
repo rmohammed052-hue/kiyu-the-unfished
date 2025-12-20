@@ -6,11 +6,10 @@ import { useAuth } from "@/lib/auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/hooks/use-toast";
 import { Loader2, Search, MessageSquare, Send, ArrowLeft, User, Phone, Video, PhoneOff } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { MessageStatusTicks } from "@/components/MessageStatusTicks";
@@ -117,11 +116,34 @@ export default function AdminMessages() {
 
     const handleCallOffer = (data: { callerId: string; callerName: string; callType: 'voice' | 'video'; offer: RTCSessionDescriptionInit }) => {
       console.log("📞 Incoming call from:", data.callerName, data.callType);
+      
+      // Store offer for later retrieval
+      localStorage.setItem(`call_offer_${data.callerId}`, JSON.stringify(data.offer));
+      
       setIncomingCall({
         callerId: data.callerId,
         callerName: data.callerName,
         callType: data.callType,
         offer: data.offer
+      });
+
+      // Show non-blocking toast notification
+      toast({
+        title: `Incoming ${data.callType === 'video' ? 'Video' : 'Voice'} Call`,
+        description: `${data.callerName} is calling you...`,
+        action: (
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={() => {
+                navigate(`/admin/call/incoming?callerId=${data.callerId}&callerName=${encodeURIComponent(data.callerName)}&callType=${data.callType}`);
+              }}
+            >
+              View Call
+            </Button>
+          </div>
+        ),
+        duration: 30000, // 30 seconds
       });
     };
 

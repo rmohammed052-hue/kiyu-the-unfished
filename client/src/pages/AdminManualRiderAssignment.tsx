@@ -6,6 +6,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useSocket } from "@/contexts/NotificationContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,12 +45,39 @@ function AssignRiderDialog({ order, onSuccess }: { order: Order; onSuccess: () =
   const [open, setOpen] = useState(false);
   const [selectedRiderId, setSelectedRiderId] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [onlineRiders, setOnlineRiders] = useState<Set<string>>(new Set());
   const { toast } = useToast();
+  const socket = useSocket();
 
   const { data: availableRiders = [], isLoading: loadingRiders } = useQuery<AvailableRider[]>({
     queryKey: ["/api/riders/available"],
     enabled: open,
   });
+
+  // Track online riders via socket
+  useEffect(() => {
+    if (!socket || !open) return;
+
+    const handleUserOnline = (data: { userId: string }) => {
+      setOnlineRiders(prev => new Set(prev).add(data.userId));
+    };
+
+    const handleUserOffline = (data: { userId: string }) => {
+      setOnlineRiders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(data.userId);
+        return newSet;
+      });
+    };
+
+    socket.on('user_online', handleUserOnline);
+    socket.on('user_offline', handleUserOffline);
+
+    return () => {
+      socket.off('user_online', handleUserOnline);
+      socket.off('user_offline', handleUserOffline);
+    };
+  }, [socket, open]);
 
   const assignMutation = useMutation({
     mutationFn: async (riderId: string) => {
@@ -140,45 +168,65 @@ function AssignRiderDialog({ order, onSuccess }: { order: Order; onSuccess: () =
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {availableRiders.map((riderData) => (
-                    <Card
-                      key={riderData.rider.id}
-                      className={`cursor-pointer transition-colors ${
-                        selectedRiderId === riderData.rider.id
-                          ? "border-primary bg-primary/5"
-                          : "hover-elevate"
-                      }`}
-                      onClick={() => setSelectedRiderId(riderData.rider.id)}
-                      data-testid={`card-rider-${riderData.rider.id}`}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-4">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src={riderData.rider.profileImage || undefined} />
-                            <AvatarFallback>{riderData.rider.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <h4 className="font-semibold">{riderData.rider.name}</h4>
-                            <p className="text-sm text-muted-foreground">{riderData.rider.email}</p>
-                            {riderData.rider.phone && (
-                              <p className="text-xs text-muted-foreground">{riderData.rider.phone}</p>
+                  {availableRiders.map((riderData) => {
+                    const isOnline = onlineRiders.has(riderData.rider.id);
+                    return (
+                      <Card
+                        key={riderData.rider.id}
+                        className={`cursor-pointer transition-colors ${
+                          selectedRiderId === riderData.rider.id
+                            ? "border-primary bg-primary/5"
+                            : "hover-elevate"
+                        }`}
+                        onClick={() => setSelectedRiderId(riderData.rider.id)}
+                        data-testid={`card-rider-${riderData.rider.id}`}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-4">
+                            <div className="relative">
+                              <Avatar className="h-12 w-12">
+                                <AvatarImage src={riderData.rider.profileImage || undefined} />
+                                <AvatarFallback>{riderData.rider.name.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              {/* Online status indicator */}
+                              <div
+                                className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
+                                  isOnline ? 'bg-green-500' : 'bg-gray-400'
+                                }`}
+                                title={isOnline ? 'Online' : 'Offline'}
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-semibold">{riderData.rider.name}</h4>
+                                <Badge
+                                  variant={isOnline ? 'default' : 'secondary'}
+                                  className={`text-xs ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}
+                                >
+                                  {isOnline ? '● Online' : '○ Offline'}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">{riderData.rider.email}</p>
+                              {riderData.rider.phone && (
+                                <p className="text-xs text-muted-foreground">{riderData.rider.phone}</p>
+                              )}
+                            </div>
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-primary">
+                                {riderData.activeOrderCount}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Active {riderData.activeOrderCount === 1 ? "Order" : "Orders"}
+                              </div>
+                            </div>
+                            {selectedRiderId === riderData.rider.id && (
+                              <CheckCircle2 className="h-6 w-6 text-primary" />
                             )}
                           </div>
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-primary">
-                              {riderData.activeOrderCount}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              Active {riderData.activeOrderCount === 1 ? "Order" : "Orders"}
-                            </div>
-                          </div>
-                          {selectedRiderId === riderData.rider.id && (
-                            <CheckCircle2 className="h-6 w-6 text-primary" />
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </div>
