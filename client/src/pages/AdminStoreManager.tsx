@@ -342,21 +342,6 @@ export default function AdminStoreManager() {
                       )}
                       <p className="text-xs text-muted-foreground">Supporting color for headers and navigation</p>
                     </div>
-
-                    <div className="p-4 bg-muted rounded-lg">
-                      <p className="text-sm text-muted-foreground">
-                        Need more advanced branding options?{" "}
-                        <button
-                          type="button"
-                          className="text-primary hover:underline font-medium"
-                          onClick={() => navigate("/admin/branding")}
-                          data-testid="link-branding-page"
-                        >
-                          Visit the Branding page
-                        </button>
-                        {" "}for full customization.
-                      </p>
-                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>

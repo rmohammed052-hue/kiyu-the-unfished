@@ -146,4 +146,16 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  
+  /* Hover and active elevation effects for better UX */
+  .hover-elevate {
+    @apply transition-all duration-200;
+  }
+  .hover-elevate:hover {
+    @apply shadow-md -translate-y-0.5;
+  }
+  
+  .active-elevate-2:active {
+    @apply scale-[0.98] shadow-sm;
+  }
 }

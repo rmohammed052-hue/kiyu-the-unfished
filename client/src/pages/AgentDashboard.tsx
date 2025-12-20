@@ -27,8 +27,8 @@ export default function AgentDashboard() {
 
   return (
     <DashboardLayout role="agent">
-      <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="p-6" data-testid="agent-dashboard-container">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-testid="agent-metrics-grid">
               <Card data-testid="card-open-tickets">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">Open Tickets</CardTitle>
@@ -74,12 +74,12 @@ export default function AgentDashboard() {
               </Card>
             </div>
 
-            <Card>
+            <Card data-testid="card-recent-activity">
               <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
+                <CardTitle data-testid="heading-recent-activity">Recent Activity</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
+                <div className="text-center py-12 text-muted-foreground" data-testid="text-no-activity">
                   <p>No recent activity</p>
                 </div>
               </CardContent>

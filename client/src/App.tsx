@@ -34,7 +34,6 @@ import Settings from "@/pages/Settings";
 import ChangePassword from "@/pages/ChangePassword";
 import AdminSettings from "@/pages/AdminSettings";
 import AdminStoreManager from "@/pages/AdminStoreManager";
-import AdminBranding from "@/pages/AdminBranding";
 import AdminDeliveryTracking from "@/pages/AdminDeliveryTracking";
 import AdminDeliveryZones from "@/pages/AdminDeliveryZones";
 import AdminBannerManager from "@/pages/AdminBannerManager";
@@ -125,7 +124,6 @@ function Router() {
       <Route path="/admin/stores" component={AdminStoresList} />
       <Route path="/admin/store" component={AdminStoreManager} />
       <Route path="/admin/settings" component={AdminSettings} />
-      <Route path="/admin/branding" component={AdminBranding} />
       <Route path="/admin/delivery-tracking" component={AdminDeliveryTracking} />
       <Route path="/admin/zones" component={AdminDeliveryZones} />
       <Route path="/admin/delivery-zones" component={AdminDeliveryZones} />

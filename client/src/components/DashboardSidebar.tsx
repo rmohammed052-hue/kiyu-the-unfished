@@ -46,7 +46,6 @@ const menuItems: Record<string, MenuItem[]> = {
   super_admin: [
     { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
     { icon: Truck, label: "Live Delivery", id: "delivery-tracking" },
-    { icon: Palette, label: "Branding", id: "branding" },
     { icon: Grid3x3, label: "Categories", id: "categories" },
     { icon: ImagePlus, label: "Media Library", id: "media-library" },
     { icon: Package, label: "Products", id: "products" },
@@ -68,7 +67,6 @@ const menuItems: Record<string, MenuItem[]> = {
   ],
   admin: [
     { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
-    { icon: Palette, label: "Branding", id: "branding" },
     { icon: Grid3x3, label: "Categories", id: "categories" },
     { icon: Package, label: "Products", id: "products" },
     { icon: ShoppingBag, label: "Orders", id: "orders" },
@@ -181,10 +179,10 @@ export default function DashboardSidebar({
               <button
                 onClick={() => onItemClick?.(item.id)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover-elevate active-elevate-2",
+                  "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-card-foreground"
+                    ? "bg-primary text-primary-foreground shadow-lg border-2 border-primary/20 scale-[1.02] font-semibold"
+                    : "text-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-md hover:scale-[1.01] active:scale-[0.98]"
                 )}
                 data-testid={`nav-item-${item.id}`}
               >

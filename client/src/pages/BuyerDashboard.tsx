@@ -47,8 +47,8 @@ export default function BuyerDashboard() {
 
   return (
     <DashboardLayout role="buyer">
-      <div className="p-6">
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
+      <div className="p-6" data-testid="buyer-dashboard-container">
+        <div className="grid gap-6 md:grid-cols-3 mb-8" data-testid="buyer-stats-grid">
           <Card data-testid="card-total-orders">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
@@ -84,16 +84,16 @@ export default function BuyerDashboard() {
         </div>
 
         {isLoading ? (
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex justify-center" data-testid="buyer-loading">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : orders.length > 0 ? (
-          <Card className="mt-8">
+          <Card className="mt-8" data-testid="card-recent-orders">
             <CardHeader>
-              <CardTitle>Recent Orders</CardTitle>
+              <CardTitle data-testid="heading-recent-orders">Recent Orders</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-4" data-testid="buyer-orders-list">
                 {orders.slice(0, 5).map((order) => {
                   const isUnpaid = order.status === "pending" || order.status === "payment_pending" || order.status === "payment_failed";
                   const handleClick = () => {
@@ -131,11 +131,11 @@ export default function BuyerDashboard() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="mt-8">
+          <Card className="mt-8" data-testid="card-no-orders">
             <CardContent className="py-12 text-center">
               <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No orders yet</h3>
-              <p className="text-muted-foreground mb-4">Start shopping to see your orders here</p>
+              <h3 className="text-lg font-semibold mb-2" data-testid="heading-no-orders">No orders yet</h3>
+              <p className="text-muted-foreground mb-4" data-testid="text-no-orders-message">Start shopping to see your orders here</p>
               <Button onClick={() => navigate("/")} data-testid="button-start-shopping">
                 Start Shopping
               </Button>

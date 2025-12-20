@@ -29,7 +29,6 @@ const roleBasePaths: Record<string, string> = {
 
 const routeToMenuId: Record<string, string> = {
   "/admin": "dashboard",
-  "/admin/branding": "branding",
   "/admin/categories": "categories",
   "/admin/media-library": "media-library",
   "/admin/products": "products",
@@ -37,6 +36,7 @@ const routeToMenuId: Record<string, string> = {
   "/admin/users": "users",
   "/admin/sellers": "sellers",
   "/admin/riders": "riders",
+  "/admin/manual-rider-assignment": "manual-rider-assignment",
   "/admin/applications": "applications",
   "/admin/permissions": "permissions",
   "/admin/zones": "zones",

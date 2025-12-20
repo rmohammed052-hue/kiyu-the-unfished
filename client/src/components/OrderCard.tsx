@@ -10,7 +10,7 @@ interface OrderCardProps {
   items: number;
   total: number;
   currency?: string;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  status: "pending" | "processing" | "delivering" | "delivered" | "cancelled" | "disputed";
   deliveryMethod: "pickup" | "bus" | "rider";
   date: string;
   onViewDetails?: (orderId: string) => void;
@@ -19,9 +19,10 @@ interface OrderCardProps {
 const statusConfig = {
   pending: { label: "Pending", className: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400" },
   processing: { label: "Processing", className: "bg-blue-500/10 text-blue-700 dark:text-blue-400" },
-  shipped: { label: "Shipped", className: "bg-purple-500/10 text-purple-700 dark:text-purple-400" },
+  delivering: { label: "Delivering", className: "bg-purple-500/10 text-purple-700 dark:text-purple-400" },
   delivered: { label: "Delivered", className: "bg-primary/10 text-primary" },
   cancelled: { label: "Cancelled", className: "bg-destructive/10 text-destructive" },
+  disputed: { label: "Disputed", className: "bg-orange-500/10 text-orange-700 dark:text-orange-400" },
 };
 
 const deliveryConfig = {
@@ -42,7 +43,7 @@ export default function OrderCard({
   onViewDetails,
 }: OrderCardProps) {
   const { formatPrice } = useLanguage();
-  const statusInfo = statusConfig[status];
+  const statusInfo = statusConfig[status] || statusConfig.pending;
   const deliveryInfo = deliveryConfig[deliveryMethod];
   const DeliveryIcon = deliveryInfo.icon;
 

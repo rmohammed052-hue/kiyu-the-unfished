@@ -124,7 +124,6 @@ export default function RiderEdit() {
     navigate(
       id === "dashboard" ? "/admin" :
       id === "store" ? "/admin/store" :
-      id === "branding" ? "/admin/branding" :
       id === "categories" ? "/admin/categories" :
       id === "products" ? "/admin/products" :
       id === "orders" ? "/admin/orders" :

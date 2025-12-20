@@ -57,8 +57,6 @@ export default function AdminDashboardConnected() {
       setActiveItem("permissions");
     } else if (path.includes("/admin/store")) {
       setActiveItem("store");
-    } else if (path.includes("/admin/branding")) {
-      setActiveItem("branding");
     } else if (path.includes("/admin/categories")) {
       setActiveItem("categories");
     } else if (path.includes("/admin/products")) {
@@ -104,7 +102,6 @@ export default function AdminDashboardConnected() {
       id === "delivery-tracking" ? "/admin/delivery-tracking" :
       id === "permissions" ? "/admin/permissions" :
       id === "store" ? "/admin/store" :
-      id === "branding" ? "/admin/branding" :
       id === "categories" ? "/admin/categories" :
       id === "media-library" ? "/admin/media-library" :
       id === "products" ? "/admin/products" :
@@ -190,11 +187,11 @@ export default function AdminDashboardConnected() {
           <div className="max-w-7xl mx-auto space-y-6">
             {user.role === "super_admin" && (
               analyticsLoading ? (
-                <div className="flex justify-center p-8">
+                <div className="flex justify-center p-8" data-testid="analytics-loading">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : analytics ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-testid="analytics-cards">
                   <MetricCard
                     title="Total Revenue"
                     value={formatPrice(analytics.totalRevenue || 0)}
@@ -230,8 +227,8 @@ export default function AdminDashboardConnected() {
               )
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6" data-testid="admin-quick-actions">
+              <Card data-testid="card-platform-settings">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Platform Settings</CardTitle>
                   <Button 
@@ -256,7 +253,7 @@ export default function AdminDashboardConnected() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card data-testid="card-sellers-management">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <UserCog className="h-5 w-5" />
@@ -285,8 +282,8 @@ export default function AdminDashboardConnected() {
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6" data-testid="admin-management-section">
+              <Card data-testid="card-applications">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Ticket className="h-5 w-5" />
@@ -314,7 +311,7 @@ export default function AdminDashboardConnected() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card data-testid="card-riders-management">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Truck className="h-5 w-5" />
@@ -343,18 +340,18 @@ export default function AdminDashboardConnected() {
               </Card>
             </div>
 
-            <div>
+            <div data-testid="recent-orders-section">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">Recent Orders</h2>
+                <h2 className="text-xl font-bold" data-testid="heading-recent-orders">Recent Orders</h2>
                 <Button variant="outline" onClick={() => navigate("/orders")} data-testid="button-view-all">View All</Button>
               </div>
 
               {ordersLoading ? (
-                <div className="flex justify-center p-8">
+                <div className="flex justify-center p-8" data-testid="orders-loading">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : recentOrders.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="orders-grid">
                   {recentOrders.map((order) => {
                     const buyer = buyerMap.get(order.buyerId);
                     const orderDate = new Date(order.createdAt);
@@ -380,7 +377,7 @@ export default function AdminDashboardConnected() {
                   })}
                 </div>
               ) : (
-                <Card>
+                <Card data-testid="card-no-orders">
                   <CardContent className="p-8 text-center text-muted-foreground">
                     No orders yet
                   </CardContent>

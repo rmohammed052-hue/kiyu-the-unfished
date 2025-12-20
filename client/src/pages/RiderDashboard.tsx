@@ -70,14 +70,14 @@ export default function RiderDashboard() {
 
   return (
     <DashboardLayout role="rider">
-      <div className="p-6">
+      <div className="p-6" data-testid="rider-dashboard-container">
             {ordersLoading ? (
-              <div className="flex justify-center p-8">
+              <div className="flex justify-center p-8" data-testid="rider-loading">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-testid="rider-metrics-grid">
                   <MetricCard
                     title="Today's Earnings"
                     value={formatPrice(todayEarnings)}
@@ -100,8 +100,8 @@ export default function RiderDashboard() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-testid="rider-delivery-sections">
+                  <div className="space-y-4" data-testid="active-deliveries-section">
                     <h2 className="text-xl font-bold" data-testid="text-active-deliveries">Active Deliveries</h2>
                     {activeDeliveries.length > 0 ? (
                       activeDeliveries.map((order) => (
@@ -124,8 +124,8 @@ export default function RiderDashboard() {
                     )}
                   </div>
 
-                  <div>
-                    <h2 className="text-xl font-bold mb-4">Current Route</h2>
+                  <div data-testid="current-route-section">
+                    <h2 className="text-xl font-bold mb-4" data-testid="heading-current-route">Current Route</h2>
                     {activeDeliveries.length > 0 ? (
                       <DeliveryTracker
                         orderId={activeDeliveries[0].orderNumber}
@@ -134,7 +134,7 @@ export default function RiderDashboard() {
                         estimatedArrival="3:15 PM"
                       />
                     ) : (
-                      <p className="text-muted-foreground text-center py-8">
+                      <p className="text-muted-foreground text-center py-8" data-testid="text-no-route">
                         No active route
                       </p>
                     )}
