@@ -3068,7 +3068,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             otherUserId: msg.receiverId,
             otherUserName: receiver[0]?.name || 'Unknown',
             otherUserRole: receiver[0]?.role || 'user',
-            lastMessage: msg.content,
+            lastMessage: msg.message,
             lastMessageTime: msg.createdAt,
             messageStatus: msg.readAt ? 'read' : msg.deliveredAt ? 'delivered' : 'sent',
             unreadCount: 0,
@@ -3107,7 +3107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           return {
             id: msg.id,
-            content: msg.content,
+            message: msg.message,
             senderName: sender[0]?.name || 'Unknown',
             senderRole: sender[0]?.role || 'user',
             receiverName: receiver[0]?.name || 'Unknown',
@@ -5041,15 +5041,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Store location in database if orderId is provided
         if (orderId) {
-          await storage.updateDeliveryLocation({
-            orderId,
-            latitude: position.latitude,
-            longitude: position.longitude,
-            accuracy: position.accuracy,
-            speed: position.speed,
-            heading: position.heading,
-            timestamp: new Date(position.timestamp),
-            batteryLevel: batteryLevel || null,
+          await storage.createDeliveryTracking({
+            orderId: orderId.toString(),
+            latitude: position.latitude.toString(),
+            longitude: position.longitude.toString(),
+            accuracy: position.accuracy?.toString(),
+            speed: position.speed?.toString(),
+            heading: position.heading?.toString(),
           });
 
           // Broadcast to admins monitoring the delivery
