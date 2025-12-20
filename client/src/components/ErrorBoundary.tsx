@@ -25,7 +25,7 @@ interface State {
  *   <YourComponent />
  * </ErrorBoundary>
  */
-class ErrorBoundary extends Component<Props, State> {
+export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
