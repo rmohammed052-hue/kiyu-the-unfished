@@ -2993,6 +2993,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin message monitoring endpoints
+  app.get("/api/admin/message-stats", requireAuth, requireRole("admin", "super_admin"), async (req, res) => {
+    try {
+      const messages = await db.select().from(chatMessages);
+      
+      const totalMessages = messages.length;
+      const deliveredMessages = messages.filter(m => m.deliveredAt !== null).length;
+      const readMessages = messages.filter(m => m.readAt !== null).length;
+      const pendingMessages = totalMessages - deliveredMessages;
+      
+      // Calculate delivery and read rates
+      const deliveryRate = totalMessages > 0 ? (deliveredMessages / totalMessages) * 100 : 0;
+      const readRate = deliveredMessages > 0 ? (readMessages / deliveredMessages) * 100 : 0;
+      
+      // Count active conversations (messages in last 24 hours)
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const recentMessages = messages.filter(m => 
+        m.createdAt && new Date(m.createdAt) > yesterday
+      );
+      
+      const activeConversations = new Set(
+        recentMessages.map(m => `${m.senderId}-${m.receiverId}`)
+      ).size;
+      
+      // Calculate average response time (time from sent to read)
+      const messagesWithReadTime = messages.filter(m => m.createdAt && m.readAt);
+      let avgResponseTime = 0;
+      
+      if (messagesWithReadTime.length > 0) {
+        const totalResponseTime = messagesWithReadTime.reduce((sum, m) => {
+          const sent = new Date(m.createdAt!).getTime();
+          const read = new Date(m.readAt!).getTime();
+          return sum + (read - sent);
+        }, 0);
+        avgResponseTime = totalResponseTime / messagesWithReadTime.length / 1000 / 60; // Convert to minutes
+      }
+      
+      res.json({
+        totalMessages,
+        deliveredMessages,
+        readMessages,
+        pendingMessages,
+        deliveryRate: Math.round(deliveryRate * 10) / 10,
+        readRate: Math.round(readRate * 10) / 10,
+        activeConversations,
+        avgResponseTime: Math.round(avgResponseTime * 10) / 10,
+      });
+    } catch (error: any) {
+      console.error("Failed to fetch message stats:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/admin/conversations", requireAuth, requireRole("admin", "super_admin"), async (req, res) => {
+    try {
+      const messages = await db.select().from(chatMessages).orderBy(desc(chatMessages.createdAt));
+      
+      // Group messages by conversation (unique sender-receiver pairs)
+      const conversationMap = new Map<string, any>();
+      
+      for (const msg of messages) {
+        const key = [msg.senderId, msg.receiverId].sort().join('-');
+        
+        if (!conversationMap.has(key)) {
+          const sender = await db.select().from(users).where(eq(users.id, msg.senderId)).limit(1);
+          const receiver = await db.select().from(users).where(eq(users.id, msg.receiverId)).limit(1);
+          
+          conversationMap.set(key, {
+            conversationId: key,
+            userId: msg.senderId,
+            userName: sender[0]?.name || 'Unknown',
+            userRole: sender[0]?.role || 'user',
+            otherUserId: msg.receiverId,
+            otherUserName: receiver[0]?.name || 'Unknown',
+            otherUserRole: receiver[0]?.role || 'user',
+            lastMessage: msg.content,
+            lastMessageTime: msg.createdAt,
+            messageStatus: msg.readAt ? 'read' : msg.deliveredAt ? 'delivered' : 'sent',
+            unreadCount: 0,
+            totalMessages: 0,
+          });
+        }
+        
+        const conversation = conversationMap.get(key);
+        conversation.totalMessages++;
+        
+        // Count unread messages (not read and received by this user)
+        if (!msg.readAt && msg.receiverId === conversation.userId) {
+          conversation.unreadCount++;
+        }
+      }
+      
+      res.json(Array.from(conversationMap.values()));
+    } catch (error: any) {
+      console.error("Failed to fetch conversations:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/admin/recent-messages", requireAuth, requireRole("admin", "super_admin"), async (req, res) => {
+    try {
+      const recentMessages = await db
+        .select()
+        .from(chatMessages)
+        .orderBy(desc(chatMessages.createdAt))
+        .limit(100);
+      
+      const messagesWithUsers = await Promise.all(
+        recentMessages.map(async (msg) => {
+          const sender = await db.select().from(users).where(eq(users.id, msg.senderId)).limit(1);
+          const receiver = await db.select().from(users).where(eq(users.id, msg.receiverId)).limit(1);
+          
+          return {
+            id: msg.id,
+            content: msg.content,
+            senderName: sender[0]?.name || 'Unknown',
+            senderRole: sender[0]?.role || 'user',
+            receiverName: receiver[0]?.name || 'Unknown',
+            receiverRole: receiver[0]?.role || 'user',
+            status: msg.readAt ? 'read' : msg.deliveredAt ? 'delivered' : 'sent',
+            createdAt: msg.createdAt,
+            deliveredAt: msg.deliveredAt,
+            readAt: msg.readAt,
+          };
+        })
+      );
+      
+      res.json(messagesWithUsers);
+    } catch (error: any) {
+      console.error("Failed to fetch recent messages:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // ============ Rider & Seller Analytics Routes ============
   app.get("/api/riders/:riderId/deliveries", requireAuth, requireRole("admin", "super_admin"), async (req, res) => {
     try {
@@ -4874,6 +5008,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (error) {
         console.error("Error sending message:", error);
         socket.emit("error", { message: "Failed to send message" });
+      }
+    });
+
+    // ============ Rider Location Tracking with Rate Limiting ============
+    const riderLocationRateLimiter = new Map<number, number>();
+    const RATE_LIMIT_MS = 5000; // 5 seconds minimum between updates
+
+    socket.on("rider_location_update", async (data) => {
+      try {
+        const { riderId, orderId, position, batteryLevel } = data;
+        const userId = socket.data.userId;
+
+        // Verify the user is authorized (must be the rider or an admin)
+        const user = await storage.getUser(userId);
+        if (!user || (user.id !== riderId && user.role !== 'admin' && user.role !== 'super_admin')) {
+          socket.emit("error", { message: "Unauthorized location update" });
+          return;
+        }
+
+        // Rate limiting: Check if enough time has passed since last update
+        const lastUpdate = riderLocationRateLimiter.get(riderId);
+        const now = Date.now();
+        
+        if (lastUpdate && now - lastUpdate < RATE_LIMIT_MS) {
+          // Silently drop the update (too frequent)
+          return;
+        }
+
+        // Update rate limiter
+        riderLocationRateLimiter.set(riderId, now);
+
+        // Store location in database if orderId is provided
+        if (orderId) {
+          await storage.updateDeliveryLocation({
+            orderId,
+            latitude: position.latitude,
+            longitude: position.longitude,
+            accuracy: position.accuracy,
+            speed: position.speed,
+            heading: position.heading,
+            timestamp: new Date(position.timestamp),
+            batteryLevel: batteryLevel || null,
+          });
+
+          // Broadcast to admins monitoring the delivery
+          io.emit("admin_rider_location_updated", {
+            riderId,
+            orderId,
+            latitude: position.latitude,
+            longitude: position.longitude,
+            speed: position.speed,
+            heading: position.heading,
+            timestamp: position.timestamp,
+            batteryLevel,
+          });
+
+          // Also notify the customer tracking this order
+          const order = await storage.getOrder(orderId);
+          if (order?.userId) {
+            io.to(order.userId.toString()).emit("rider_location_updated", {
+              orderId,
+              latitude: position.latitude,
+              longitude: position.longitude,
+              speed: position.speed,
+              heading: position.heading,
+              timestamp: position.timestamp,
+            });
+          }
+        }
+
+        // Acknowledge successful update
+        socket.emit("location_update_success", { timestamp: now });
+
+      } catch (error) {
+        console.error("Error updating rider location:", error);
+        socket.emit("error", { message: "Failed to update location" });
+      }
+    });
+
+    // Handle rider stopping tracking (on delivery completion or manual stop)
+    socket.on("rider_stop_tracking", async ({ riderId, orderId }) => {
+      try {
+        // Clear from rate limiter
+        riderLocationRateLimiter.delete(riderId);
+        
+        // Notify admins
+        io.emit("admin_rider_tracking_stopped", { riderId, orderId });
+        
+        socket.emit("tracking_stopped", { success: true });
+      } catch (error) {
+        console.error("Error stopping tracking:", error);
       }
     });
   });

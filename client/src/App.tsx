@@ -48,6 +48,7 @@ import AdminRiders from "@/pages/AdminRiders";
 import AdminManualRiderAssignment from "@/pages/AdminManualRiderAssignment";
 import AdminAgents from "@/pages/AdminAgents";
 import AdminMessages from "@/pages/AdminMessages";
+import AdminMessageMonitoring from "@/pages/AdminMessageMonitoring";
 import IncomingCallPage from "@/pages/IncomingCallPage";
 import AdminAnalytics from "@/pages/AdminAnalytics";
 import AdminMediaLibrary from "@/pages/AdminMediaLibrary";
@@ -149,6 +150,7 @@ function Router() {
       <Route path="/admin/applications" component={AdminApplications} />
       <Route path="/admin/permissions" component={SuperAdminPermissions} />
       <Route path="/admin/messages" component={AdminMessages} />
+      <Route path="/admin/message-monitoring" component={AdminMessageMonitoring} />
       <Route path="/admin/call/incoming" component={IncomingCallPage} />
       <Route path="/admin/analytics" component={AdminAnalytics} />
       <Route path="/admin/notifications" component={AdminNotifications} />

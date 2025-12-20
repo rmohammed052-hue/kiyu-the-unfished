@@ -3,10 +3,13 @@ import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { io, Socket } from "socket.io-client";
+import { notificationSound } from "@/lib/notificationSound";
 
 interface NotificationContextType {
   socket: Socket | null;
   isConnected: boolean;
+  soundEnabled: boolean;
+  toggleSound: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -19,11 +22,32 @@ export function useSocket() {
   return context.socket;
 }
 
+export function useNotification() {
+  const context = useContext(NotificationContext);
+  if (!context) {
+    throw new Error("useNotification must be used within NotificationProvider");
+  }
+  return context;
+}
+
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(notificationSound.isEnabled());
+
+  const toggleSound = () => {
+    const newState = !soundEnabled;
+    setSoundEnabled(newState);
+    notificationSound.setEnabled(newState);
+  };
+
+  const playNotificationSound = () => {
+    if (soundEnabled) {
+      notificationSound.play();
+    }
+  };
 
   useEffect(() => {
     if (!user) {
@@ -59,6 +83,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }) => {
       console.log("📦 Order status updated:", data);
       
+      playNotificationSound();
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
       
       toast({
@@ -85,6 +110,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }) => {
       console.log("💳 Payment completed:", data);
       
+      playNotificationSound();
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
       queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
       
@@ -103,6 +129,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }) => {
       console.log("❌ Payment failed:", data);
       
+      playNotificationSound();
       toast({
         title: "Payment Failed",
         description: `Payment for Order #${data.orderNumber} failed. ${data.reason}`,
@@ -261,7 +288,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   }, [user?.id, user?.role, toast]);
 
   return (
-    <NotificationContext.Provider value={{ socket, isConnected }}>
+    <NotificationContext.Provider value={{ socket, isConnected, soundEnabled, toggleSound }}>
       {children}
     </NotificationContext.Provider>
   );
