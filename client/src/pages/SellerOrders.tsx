@@ -8,7 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, Eye, Package, ShoppingBag, Store } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import OrderStatusBadge, { PaymentStatusBadge } from "@/components/OrderStatusBadge";
+import { filterOrdersByPaymentStatus } from "@shared/orderPaymentUtils";
 
 interface Order {
   id: string;
@@ -27,12 +29,16 @@ export default function SellerOrders() {
   const { formatPrice, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [orderContext, setOrderContext] = useState<OrderContext>("seller");
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
 
   const { data: orders = [], isLoading } = useQuery<Order[]>({
     queryKey: [`/api/orders?context=${orderContext}`],
   });
 
-  const filteredOrders = orders.filter(order =>
+  // Apply payment filter first, then search filter
+  const paymentFilteredOrders = filterOrdersByPaymentStatus(orders, paymentFilter);
+  
+  const filteredOrders = paymentFilteredOrders.filter(order =>
     order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -74,7 +80,7 @@ export default function SellerOrders() {
           </Tabs>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-6 space-y-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
@@ -85,6 +91,14 @@ export default function SellerOrders() {
               data-testid="input-search"
             />
           </div>
+          
+          <Tabs value={paymentFilter} onValueChange={(v) => setPaymentFilter(v as any)}>
+            <TabsList className="grid w-full max-w-md grid-cols-3">
+              <TabsTrigger value="all">All ({orders.length})</TabsTrigger>
+              <TabsTrigger value="paid">Paid ({orders.filter(o => o.paymentStatus === 'completed').length})</TabsTrigger>
+              <TabsTrigger value="unpaid">Unpaid ({orders.filter(o => o.paymentStatus !== 'completed').length})</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         {isLoading ? (
@@ -122,12 +136,11 @@ export default function SellerOrders() {
                           {new Date(order.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <Badge className={`${getStatusColor(order.status)} text-white`}>
-                        {order.status}
-                      </Badge>
-                      <Badge variant={order.paymentStatus === "paid" ? "default" : "outline"}>
-                        {order.paymentStatus}
-                      </Badge>
+                      <OrderStatusBadge 
+                        status={order.status} 
+                        paymentStatus={order.paymentStatus}
+                        showPaymentStatus={true}
+                      />
                     </div>
                     <p className="text-lg font-bold mt-2">{formatPrice(Number(order.total) || 0)}</p>
                   </div>

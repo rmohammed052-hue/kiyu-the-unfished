@@ -9,6 +9,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ThemeToggle from "@/components/ThemeToggle";
 import { Package, Clock, CheckCircle, XCircle, Truck, CreditCard } from "lucide-react";
+import OrderStatusBadge, { PaymentStatusBadge } from "@/components/OrderStatusBadge";
 
 interface Order {
   id: string;
@@ -93,9 +94,7 @@ export default function Orders() {
               </p>
             </div>
           </div>
-          <Badge className={getStatusColor(order.status)} data-testid={`badge-status-${order.id}`}>
-            {order.status}
-          </Badge>
+          <OrderStatusBadge status={order.status} data-testid={`badge-status-${order.id}`} />
         </div>
       </CardHeader>
       <CardContent>
@@ -112,13 +111,7 @@ export default function Orders() {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Payment:</span>
-            <Badge 
-              variant={order.paymentStatus === 'completed' ? 'default' : 'secondary'}
-              className="h-5"
-            >
-              <CreditCard className="h-3 w-3 mr-1" />
-              {order.paymentStatus === 'completed' ? 'Paid' : order.paymentStatus}
-            </Badge>
+            <PaymentStatusBadge paymentStatus={order.paymentStatus} />
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Delivery:</span>

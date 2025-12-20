@@ -12,7 +12,10 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, Eye, Package, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import OrderStatusBadge, { PaymentStatusBadge } from "@/components/OrderStatusBadge";
+import { filterOrdersByPaymentStatus } from "@shared/orderPaymentUtils";
 
 interface Order {
   id: string;
@@ -243,6 +246,7 @@ function ViewOrderDialog({
 
 export default function AdminOrders() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
   const [location, navigate] = useLocation();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { formatPrice } = useLanguage();
@@ -290,7 +294,10 @@ export default function AdminOrders() {
     setOpenOrderId(null);
   };
 
-  const filteredOrders = orders.filter(o => 
+  // Apply payment filter first, then search filter
+  const paymentFilteredOrders = filterOrdersByPaymentStatus(orders, paymentFilter);
+  
+  const filteredOrders = paymentFilteredOrders.filter(o => 
     o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
     o.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -332,18 +339,26 @@ export default function AdminOrders() {
             </div>
           </div>
 
-          <div className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search orders..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-                data-testid="input-search-orders"
-              />
+          <Tabs defaultValue="all" className="mb-6" onValueChange={(v) => setPaymentFilter(v as any)}>
+            <TabsList className="grid w-full max-w-md grid-cols-3">
+              <TabsTrigger value="all">All Orders ({orders.length})</TabsTrigger>
+              <TabsTrigger value="paid">Paid ({orders.filter(o => o.paymentStatus === 'completed').length})</TabsTrigger>
+              <TabsTrigger value="unpaid">Unpaid ({orders.filter(o => o.paymentStatus !== 'completed').length})</TabsTrigger>
+            </TabsList>
+            
+            <div className="mt-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search orders..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                  data-testid="input-search-orders"
+                />
+              </div>
             </div>
-          </div>
+          </Tabs>
 
           {isLoading ? (
             <div className="flex justify-center py-12">
@@ -361,13 +376,15 @@ export default function AdminOrders() {
                       <h3 className="font-semibold text-lg" data-testid={`text-order-number-${order.id}`}>
                         Order #{order.orderNumber}
                       </h3>
-                      <div className="flex items-center gap-3 mt-1">
+                      <div className="flex items-center gap-3 mt-1 flex-wrap">
                         <span className="text-primary font-bold" data-testid={`text-total-${order.id}`}>
                           {formatPrice(parseFloat(order.total))}
                         </span>
-                        <Badge className={getStatusColor(order.status)} data-testid={`badge-status-${order.id}`}>
-                          {order.status}
-                        </Badge>
+                        <OrderStatusBadge 
+                          status={order.status} 
+                          paymentStatus={order.paymentStatus}
+                          showPaymentStatus={true}
+                        />
                         <span className="text-sm text-muted-foreground" data-testid={`text-date-${order.id}`}>
                           {new Date(order.createdAt).toLocaleDateString()}
                         </span>
