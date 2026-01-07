@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/lib/auth";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
-import { useBranding } from "@/hooks/useBranding";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 import Home from "@/pages/HomeConnected";
@@ -94,9 +93,6 @@ import TrackOrder from "@/pages/TrackOrder";
 import EReceipt from "@/pages/EReceipt";
 
 function Router() {
-  // Apply branding colors from database settings
-  useBranding();
-  
   return (
     <Switch>
       <Route path="/" component={Home} />
