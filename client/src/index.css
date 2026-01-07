@@ -34,9 +34,9 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     
-    /* Soft, subtle borders */
-    --border: 220 13% 90%;
-    --input: 220 13% 90%;
+    /* Very soft, subtle borders - barely visible */
+    --border: 220 10% 94%;
+    --input: 220 10% 92%;
     --ring: 160 84% 39%;
     
     --radius: 0.5rem;
@@ -53,7 +53,7 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-border: 220 10% 94%;
     --sidebar-ring: 160 84% 39%;
   }
  
@@ -63,24 +63,24 @@
     --font-serif: 'Playfair Display', 'Lora', Georgia, serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
     
-    /* Dark Mode - Original deep dark theme */
-    --background: 222.2 84% 4.9%;
+    /* Dark Mode - Slightly softened dark theme */
+    --background: 222 20% 10%;
     --foreground: 210 40% 98%;
     
-    --card: 222.2 84% 4.9%;
+    --card: 222 20% 12%;
     --card-foreground: 210 40% 98%;
     
-    --popover: 222.2 84% 4.9%;
+    --popover: 222 20% 12%;
     --popover-foreground: 210 40% 98%;
     
     --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 220 20% 18%;
     --secondary-foreground: 210 40% 98%;
     
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 220 20% 18%;
+    --muted-foreground: 215 20% 65%;
     
     --accent: 160 84% 39%;
     --accent-foreground: 0 0% 100%;
@@ -88,9 +88,9 @@
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 98%;
     
-    /* Soft borders for dark mode */
-    --border: 217.2 32.6% 25%;
-    --input: 217.2 32.6% 20%;
+    /* Very soft borders for dark mode */
+    --border: 220 15% 20%;
+    --input: 220 15% 18%;
     --ring: 160 84% 39%;
     
     --chart-1: 160 84% 39%;
@@ -99,13 +99,13 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
     
-    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-background: 222 20% 9%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217.2 32.6% 15%;
+    --sidebar-accent: 220 15% 16%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 20%;
+    --sidebar-border: 220 15% 18%;
     --sidebar-ring: 160 84% 39%;
   }
 }
