@@ -14,6 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Loader2, Search, User, Edit, Ban, MessageSquare, Trash2, ArrowLeft, CheckCircle, XCircle, UserCog, Phone } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 import { VideoCallModal } from "@/components/VideoCallModal";
 
 interface UserData {
@@ -67,7 +68,7 @@ export default function AdminUsers() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update user status",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
       setConfirmBanUser(null);
@@ -89,7 +90,7 @@ export default function AdminUsers() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete user",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
       setConfirmDeleteUser(null);
@@ -145,7 +146,7 @@ export default function AdminUsers() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to promote user",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
       setPromoteDialogOpen(false);

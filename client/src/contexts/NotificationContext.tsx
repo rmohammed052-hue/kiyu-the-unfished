@@ -31,7 +31,11 @@ export function useNotification() {
 }
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const auth = useAuth();
+  if (!auth) {
+    throw new Error("NotificationProvider must be used within an AuthProvider. useAuth() returned undefined.");
+  }
+  const { user } = auth;
   const { toast } = useToast();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);

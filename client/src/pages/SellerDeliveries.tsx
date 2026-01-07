@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -20,6 +21,7 @@ interface Delivery {
 }
 
 export default function SellerDeliveries() {
+  const [, navigate] = useLocation();
   const { user } = useAuth();
   const { t } = useLanguage();
 
@@ -86,7 +88,12 @@ export default function SellerDeliveries() {
                       </p>
                     )}
                   </div>
-                  <Button variant="outline" size="sm" data-testid={`button-track-${delivery.id}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    data-testid={`button-track-${delivery.id}`}
+                    onClick={() => navigate(`/track?order=${delivery.orderNumber}`)}
+                  >
                     Track
                   </Button>
                 </div>

@@ -3,6 +3,7 @@ import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -69,7 +70,7 @@ export default function Profile() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update profile. Please try again.",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },

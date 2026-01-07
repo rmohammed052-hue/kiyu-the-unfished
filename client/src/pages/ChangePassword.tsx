@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -83,7 +84,7 @@ export default function ChangePassword() {
     onError: (error: Error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to change password. Please try again.",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },

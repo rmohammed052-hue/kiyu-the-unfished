@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 import ChatInterface from "@/components/ChatInterface";
 import CallInterface from "@/components/CallInterface";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -441,7 +442,7 @@ export default function ChatPageConnected() {
     onError: (error: any) => {
       toast({
         title: "Failed to Send Message",
-        description: error.message || "Failed to send message",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },

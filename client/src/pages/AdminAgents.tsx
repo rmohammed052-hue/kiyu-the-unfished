@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 
 interface Agent {
   id: string;
@@ -64,7 +65,7 @@ function AddAgentDialog() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create agent",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },

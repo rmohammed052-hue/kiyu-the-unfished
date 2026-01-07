@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 import AuthForm from "@/components/AuthForm";
 import ThemeToggle from "@/components/ThemeToggle";
 import logoLight from "@assets/light_mode_1762169855262.png";
@@ -41,7 +42,7 @@ export default function AuthPage() {
     } catch (error: any) {
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid email or password",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     }
@@ -57,7 +58,7 @@ export default function AuthPage() {
     } catch (error: any) {
       toast({
         title: "Signup Failed",
-        description: error.message || "Failed to create account",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     }

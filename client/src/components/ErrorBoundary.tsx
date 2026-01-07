@@ -1,7 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home, Mail } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -98,12 +98,13 @@ export class ErrorBoundary extends Component<Props, State> {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <AlertTriangle className="h-8 w-8 text-destructive" />
-                <CardTitle className="text-2xl">Something went wrong</CardTitle>
+                <CardTitle className="text-2xl">Oops! Something went wrong</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                We're sorry, but an unexpected error occurred. Our team has been notified and we're working on a fix.
+                We're sorry, but we ran into an unexpected problem. Don't worry - your data is safe. 
+                Please try refreshing the page or going back to the home page.
               </p>
 
               {process.env.NODE_ENV === 'development' && this.state.error && (
@@ -114,7 +115,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   {this.state.errorInfo && (
                     <details className="mt-2">
                       <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
-                        View stack trace
+                        Technical details (for developers)
                       </summary>
                       <pre className="mt-2 text-xs overflow-auto max-h-64 text-muted-foreground">
                         {this.state.errorInfo.componentStack}
@@ -124,7 +125,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </div>
               )}
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 <Button onClick={this.handleReset} variant="default">
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Try Again
@@ -136,7 +137,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
 
               <p className="text-sm text-muted-foreground">
-                If this problem persists, please contact support with the error details above.
+                If this keeps happening, please contact our support team and we'll help you out.
               </p>
             </CardContent>
           </Card>

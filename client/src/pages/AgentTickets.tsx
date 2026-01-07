@@ -68,7 +68,11 @@ export default function AgentTickets() {
   };
 
   const TicketCard = ({ ticket }: { ticket: SupportTicket }) => (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow" data-testid={`ticket-${ticket.id}`}>
+    <Card 
+      className="cursor-pointer hover:shadow-md transition-shadow" 
+      data-testid={`ticket-${ticket.id}`}
+      onClick={() => navigate(`/agent/tickets/${ticket.id}`)}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">

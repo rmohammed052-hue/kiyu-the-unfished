@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -25,6 +26,7 @@ interface Order {
 type OrderContext = "seller" | "buyer";
 
 export default function SellerOrders() {
+  const [, navigate] = useLocation();
   const { user } = useAuth();
   const { formatPrice, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
@@ -144,7 +146,12 @@ export default function SellerOrders() {
                     </div>
                     <p className="text-lg font-bold mt-2">{formatPrice(Number(order.total) || 0)}</p>
                   </div>
-                  <Button variant="outline" size="sm" data-testid={`button-view-${order.id}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    data-testid={`button-view-${order.id}`}
+                    onClick={() => navigate(`/orders/${order.id}`)}
+                  >
                     <Eye className="h-4 w-4 mr-2" />
                     View Details
                   </Button>

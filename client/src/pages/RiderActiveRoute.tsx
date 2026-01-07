@@ -222,7 +222,15 @@ export default function RiderActiveRoute() {
                   </div>
                 </div>
 
-                <Button className="w-full" data-testid="button-navigate">
+                <Button 
+                  className="w-full" 
+                  data-testid="button-navigate"
+                  onClick={() => {
+                    // Open Google Maps with the destination address
+                    const destination = encodeURIComponent(activeDelivery.destination);
+                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}`, '_blank');
+                  }}
+                >
                   <Navigation className="h-4 w-4 mr-2" />
                   Start Navigation
                 </Button>

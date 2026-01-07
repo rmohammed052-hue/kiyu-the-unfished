@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/lib/auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -251,7 +252,7 @@ export default function AdminMessages() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to send message",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
@@ -341,7 +342,7 @@ export default function AdminMessages() {
       console.error("❌ Call start error:", error);
       toast({
         title: "Call Failed",
-        description: error instanceof Error ? error.message : "Could not access camera/microphone",
+        description: getUserFriendlyError(error as Error),
         variant: "destructive"
       });
     }
@@ -389,7 +390,7 @@ export default function AdminMessages() {
       console.error("❌ Call accept error:", error);
       toast({
         title: "Call Failed",
-        description: error instanceof Error ? error.message : "Could not accept call",
+        description: getUserFriendlyError(error as Error),
         variant: "destructive"
       });
       setIncomingCall(null);

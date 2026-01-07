@@ -6,6 +6,7 @@ import { useLocation } from "wouter";
 import { z } from "zod";
 import { insertProductSchema } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -128,7 +129,7 @@ export default function AdminProductEdit() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update product",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },

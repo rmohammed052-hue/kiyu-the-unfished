@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, Edit, Trash2, Eye, ArrowLeft, ToggleLeft, ToggleRight, Package } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 
 interface Product {
   id: string;
@@ -43,7 +44,7 @@ function ToggleProductStatusButton({ product }: { product: Product }) {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update product status",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
@@ -87,7 +88,7 @@ function DeleteProductDialog({ product }: { product: Product }) {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete product",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },

@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -117,7 +118,7 @@ export default function AdminUserCreate() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create user",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },

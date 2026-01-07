@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 import OrderStatusBadge, { PaymentStatusBadge } from "@/components/OrderStatusBadge";
 import { filterOrdersByPaymentStatus } from "@shared/orderPaymentUtils";
 
@@ -90,7 +91,7 @@ function ViewOrderDialog({
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update order status",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
@@ -112,7 +113,7 @@ function ViewOrderDialog({
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to assign rider",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },

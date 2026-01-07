@@ -18,6 +18,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 import MediaUploadInput from "@/components/MediaUploadInput";
 
 interface SellerData {
@@ -95,7 +96,7 @@ function CreateSellerDialog() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create seller",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
@@ -313,7 +314,7 @@ function EditSellerDialog({ sellerData }: { sellerData: SellerData }) {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update seller",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
@@ -636,7 +637,7 @@ function ApproveRejectDialog({ sellerData }: { sellerData: SellerData }) {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to approve seller",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
       setAction(null);
@@ -661,7 +662,7 @@ function ApproveRejectDialog({ sellerData }: { sellerData: SellerData }) {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to reject seller",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
       setAction(null);
@@ -762,7 +763,7 @@ function BanActivateDialog({ sellerData }: { sellerData: SellerData }) {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update seller status",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },

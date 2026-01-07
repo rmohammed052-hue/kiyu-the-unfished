@@ -18,6 +18,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 
 interface Rider {
   id: string;
@@ -100,7 +101,7 @@ function AddRiderDialog() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to add rider",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
@@ -435,7 +436,7 @@ function ApproveRejectDialog({ riderData }: { riderData: Rider }) {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to approve rider",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
       setAction(null);
@@ -459,7 +460,7 @@ function ApproveRejectDialog({ riderData }: { riderData: Rider }) {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to reject rider",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
       setAction(null);

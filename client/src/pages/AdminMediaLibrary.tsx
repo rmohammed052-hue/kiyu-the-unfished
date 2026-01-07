@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -95,7 +96,7 @@ export default function AdminMediaLibrary() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to upload media",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
@@ -116,7 +117,7 @@ export default function AdminMediaLibrary() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete media",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
@@ -137,7 +138,7 @@ export default function AdminMediaLibrary() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete media",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
@@ -158,7 +159,7 @@ export default function AdminMediaLibrary() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete asset",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
@@ -179,7 +180,7 @@ export default function AdminMediaLibrary() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete assets",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },

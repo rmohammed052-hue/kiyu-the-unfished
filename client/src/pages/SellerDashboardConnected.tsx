@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getUserFriendlyError } from "@/lib/errorMessages";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import MetricCard from "@/components/MetricCard";
 import ProductCard from "@/components/ProductCard";
@@ -221,7 +222,7 @@ export default function SellerDashboardConnected() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create coupon",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
@@ -252,7 +253,7 @@ export default function SellerDashboardConnected() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update coupon",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
@@ -272,7 +273,7 @@ export default function SellerDashboardConnected() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete coupon",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
@@ -292,7 +293,7 @@ export default function SellerDashboardConnected() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update coupon status",
+        description: getUserFriendlyError(error),
         variant: "destructive",
       });
     },
