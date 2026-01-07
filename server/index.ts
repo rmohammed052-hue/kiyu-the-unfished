@@ -101,6 +101,12 @@ app.use(cookieParser());
 app.use(csrfProtection({
   cookieName: 'csrf-token',
   headerName: 'X-CSRF-Token',
+  // Exempt auth routes - they use credentials (email/password) as the security mechanism
+  ignorePaths: [
+    '/api/auth/login',
+    '/api/auth/signup',
+    '/api/auth/logout',
+  ],
   cookieOptions: {
     httpOnly: true,
     sameSite: 'strict',

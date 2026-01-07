@@ -13,6 +13,7 @@ interface CSRFOptions {
   headerName?: string;
   tokenLength?: number;
   ignoreMethods?: string[];
+  ignorePaths?: string[];
   cookieOptions?: {
     httpOnly?: boolean;
     secure?: boolean;
@@ -26,6 +27,7 @@ const defaultOptions: Required<CSRFOptions> = {
   headerName: 'x-csrf-token',
   tokenLength: 32,
   ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
+  ignorePaths: [],
   cookieOptions: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -63,6 +65,19 @@ export function csrfProtection(options: CSRFOptions = {}) {
         res.locals.csrfToken = token;
       }
       
+      return next();
+    }
+
+    // Skip CSRF check for ignored paths (e.g., auth routes that use credentials)
+    const shouldIgnorePath = config.ignorePaths.some(path => {
+      if (path.endsWith('*')) {
+        // Wildcard match - path prefix
+        return req.path.startsWith(path.slice(0, -1));
+      }
+      return req.path === path;
+    });
+
+    if (shouldIgnorePath) {
       return next();
     }
 
