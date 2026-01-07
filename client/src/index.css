@@ -9,52 +9,55 @@
     --font-serif: 'Playfair Display', 'Lora', Georgia, serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
     
-    /* Light Mode - Emerald/Teal Theme with soft shading */
-    --background: 210 20% 98%;
-    --foreground: 222.2 84% 4.9%;
+    /* Light Mode - KiyuMart Theme (#1e7b5f primary, #2c3e50 secondary) */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
     
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 210 17% 98%;
+    --card-foreground: 0 0% 0%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 0 0% 0%;
     
-    --primary: 160 84% 39%;
+    /* Primary: #1e7b5f = HSL(162, 61%, 30%) */
+    --primary: 162 61% 30%;
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary: #2c3e50 = HSL(210, 29%, 24%) */
+    --secondary: 210 29% 24%;
+    --secondary-foreground: 0 0% 100%;
     
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 17% 95%;
+    --muted-foreground: 210 29% 40%;
     
+    /* Keep current accent (emerald/teal) */
     --accent: 160 84% 39%;
     --accent-foreground: 0 0% 100%;
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     
-    /* Very soft, subtle borders - barely visible */
+    /* Very soft, subtle borders */
     --border: 220 10% 94%;
     --input: 220 10% 92%;
-    --ring: 160 84% 39%;
+    --ring: 162 61% 30%;
     
     --radius: 0.5rem;
     
-    --chart-1: 160 84% 39%;
-    --chart-2: 173 58% 39%;
+    --chart-1: 162 61% 30%;
+    --chart-2: 210 29% 24%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 160 84% 39%;
+    --sidebar-background: 210 17% 98%;
+    --sidebar-foreground: 210 29% 24%;
+    --sidebar-primary: 162 61% 30%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent: 210 17% 95%;
+    --sidebar-accent-foreground: 210 29% 24%;
     --sidebar-border: 220 10% 94%;
-    --sidebar-ring: 160 84% 39%;
+    --sidebar-ring: 162 61% 30%;
   }
  
   .dark {
@@ -63,50 +66,53 @@
     --font-serif: 'Playfair Display', 'Lora', Georgia, serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
     
-    /* Dark Mode - Slightly softened dark theme */
-    --background: 222 20% 10%;
-    --foreground: 210 40% 98%;
+    /* Dark Mode - KiyuMart Theme (#1a1a1a bg, #2a2a2a cards) */
+    --background: 0 0% 10%;
+    --foreground: 0 0% 100%;
     
-    --card: 222 20% 12%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 16%;
+    --card-foreground: 0 0% 100%;
     
-    --popover: 222 20% 12%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 16%;
+    --popover-foreground: 0 0% 100%;
     
-    --primary: 160 84% 39%;
+    /* Primary: #1e7b5f - slightly brighter for dark mode visibility */
+    --primary: 162 61% 35%;
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 220 20% 18%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary: lighter version for dark mode */
+    --secondary: 210 20% 30%;
+    --secondary-foreground: 0 0% 100%;
     
-    --muted: 220 20% 18%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 65%;
     
+    /* Keep current accent (emerald/teal) */
     --accent: 160 84% 39%;
     --accent-foreground: 0 0% 100%;
     
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 98%;
     
-    /* Ultra soft borders for dark mode - barely visible */
-    --border: 220 10% 25%;
-    --input: 220 10% 22%;
-    --ring: 160 84% 39%;
+    /* Soft borders for dark mode */
+    --border: 0 0% 22%;
+    --input: 0 0% 20%;
+    --ring: 162 61% 35%;
     
-    --chart-1: 160 84% 39%;
-    --chart-2: 160 60% 45%;
+    --chart-1: 162 61% 35%;
+    --chart-2: 162 50% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
     
-    --sidebar-background: 222 20% 9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 160 84% 39%;
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 162 61% 35%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 10% 16%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 220 10% 22%;
-    --sidebar-ring: 160 84% 39%;
+    --sidebar-accent: 0 0% 18%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 162 61% 35%;
   }
 }
 
