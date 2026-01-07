@@ -19,6 +19,14 @@ export const errorMessages: Record<string, string> = {
   "Insufficient permissions for this action": "You don't have the necessary permissions for this action.",
   "Cannot self-register as admin": "Admin accounts can only be created by existing administrators.",
   
+  // Session/CSRF errors - made user-friendly
+  "CSRF token missing": "Your session has expired. Please refresh the page and try again.",
+  "Invalid CSRF token": "Your session is invalid. Please refresh the page and try again.",
+  "Session expired": "Your session has expired. Please refresh the page and try again.",
+  "Session invalid": "Your session is invalid. Please refresh the page and try again.",
+  "token required": "Your session has expired. Please refresh the page and try again.",
+  "token mismatch": "Your session is invalid. Please refresh the page and try again.",
+  
   // User management errors
   "Email already exists": "This email is already registered. Please use a different email or sign in.",
   "User not found": "We couldn't find this user. They may have been removed.",

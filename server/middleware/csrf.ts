@@ -72,8 +72,8 @@ export function csrfProtection(options: CSRFOptions = {}) {
 
     if (!tokenFromCookie || !tokenFromHeader) {
       return res.status(403).json({
-        error: 'CSRF token missing',
-        message: 'CSRF protection: token required',
+        error: 'Session expired',
+        message: 'Your session has expired. Please refresh the page and try again.',
       });
     }
 
@@ -83,8 +83,8 @@ export function csrfProtection(options: CSRFOptions = {}) {
       Buffer.from(tokenFromHeader)
     )) {
       return res.status(403).json({
-        error: 'Invalid CSRF token',
-        message: 'CSRF protection: token mismatch',
+        error: 'Session invalid',
+        message: 'Your session is invalid. Please refresh the page and try again.',
       });
     }
 
