@@ -88,9 +88,9 @@
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 98%;
     
-    /* Very soft borders for dark mode */
-    --border: 220 15% 20%;
-    --input: 220 15% 18%;
+    /* Ultra soft borders for dark mode - barely visible */
+    --border: 220 10% 25%;
+    --input: 220 10% 22%;
     --ring: 160 84% 39%;
     
     --chart-1: 160 84% 39%;
@@ -103,9 +103,9 @@
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 16%;
+    --sidebar-accent: 220 10% 16%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 220 15% 18%;
+    --sidebar-border: 220 10% 22%;
     --sidebar-ring: 160 84% 39%;
   }
 }
