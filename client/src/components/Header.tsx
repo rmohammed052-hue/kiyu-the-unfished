@@ -1,6 +1,7 @@
-import { Search, Menu, Globe, User, Bell, LayoutDashboard, ShoppingBag, Store as StoreIcon, Truck } from "lucide-react";
+import { Search, Menu, Globe, User, Bell, LayoutDashboard, ShoppingBag, Store as StoreIcon, Truck, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import ThemeToggle from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { useLanguage, languages, Language } from "@/contexts/LanguageContext";
@@ -232,6 +233,8 @@ export default function Header({
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
+
+            <ThemeToggle />
 
             <Button 
               variant="ghost" 
